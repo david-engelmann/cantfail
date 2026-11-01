@@ -365,7 +365,9 @@ def top_level_test_functions(source: str) -> list[str]:
     """Return the names of test functions defined at module level.
 
     Per function verdicts in slice 2 cover these functions. Methods
-    inside classes are not selected on their own.
+    inside classes are not selected on their own by this helper,
+    and a name defined twice is returned once, under the single
+    name pytest can run.
     """
     tree = ast.parse(source)
     names: list[str] = []
@@ -379,20 +381,195 @@ def top_level_test_functions(source: str) -> list[str]:
     return names
 
 
-def has_class_based_tests(source: str) -> bool:
-    """Return True when a class in the source defines test methods.
+def _unittest_bindings(tree):
+    """Names in this module that refer to unittest and its TestCase.
 
-    A name defined twice at module level is judged once, under the
-    name pytest can run, and a file carrying class based tests is
-    judged at whole file level by the runner, because per function
-    verdicts do not select methods.
+    Returns a pair of the local names bound to the TestCase class
+    itself and the local names bound to the unittest module.
     """
-    tree = ast.parse(source)
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ClassDef):
-            for item in node.body:
-                if isinstance(
-                    item, (ast.FunctionDef, ast.AsyncFunctionDef)
-                ) and item.name.startswith("test"):
+    testcase_names = set()
+    module_names = set()
+    for node in tree.body:
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "unittest":
+                    module_names.add(alias.asname or "unittest")
+        elif isinstance(node, ast.ImportFrom):
+            if node.module in ("unittest", "unittest.case"):
+                for alias in node.names:
+                    if alias.name == "TestCase":
+                        testcase_names.add(alias.asname or "TestCase")
+    return testcase_names, module_names
+
+
+def _is_testcase_class(node, classes, bindings, seen):
+    """Return True when a class resolves to a unittest TestCase.
+
+    Resolution follows the names the module itself binds. A base
+    counts when it is a bound TestCase name, the TestCase attribute
+    of a bound unittest module, or a local class that itself
+    resolves to a TestCase. A name that merely ends in TestCase and
+    resolves to nothing here does not count.
+    """
+    testcase_names, module_names = bindings
+    if id(node) in seen:
+        return False
+    seen = seen | {id(node)}
+    for base in node.bases:
+        if isinstance(base, ast.Name):
+            if base.id in testcase_names:
+                return True
+            local = classes.get(base.id)
+            if local is not None and _is_testcase_class(
+                local, classes, bindings, seen
+            ):
+                return True
+        elif isinstance(base, ast.Attribute):
+            if (
+                base.attr == "TestCase"
+                and isinstance(base.value, ast.Name)
+                and base.value.id in module_names
+            ):
+                return True
+    return False
+
+
+def _sets_test_false(node):
+    for member in node.body:
+        if isinstance(member, ast.Assign):
+            for target in member.targets:
+                if (
+                    isinstance(target, ast.Name)
+                    and target.id == "__test__"
+                    and isinstance(member.value, ast.Constant)
+                    and member.value.value is False
+                ):
                     return True
     return False
+
+
+def _defines_init(node):
+    return any(
+        isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and member.name == "__init__"
+        for member in node.body
+    )
+
+
+def _class_yields_methods(node, classes, bindings):
+    """Return True when the selector names methods of this class.
+
+    Two concrete rules, matching what pytest collects by default. A
+    class whose name starts with Test yields its methods, unless it
+    defines an init of its own, which makes pytest refuse it. A
+    class that resolves to a unittest TestCase yields its methods
+    under any name. A class that sets __test__ to False yields
+    nothing, whatever its name or bases.
+    """
+    if _sets_test_false(node):
+        return False
+    if _is_testcase_class(node, classes, bindings, frozenset()):
+        return True
+    if node.name.startswith("Test"):
+        return not _defines_init(node)
+    return False
+
+
+def _test_method_names(node, classes, seen):
+    """Test method names of a class, its own first, then inherited.
+
+    Inherited names come from local base classes in base order,
+    skipping any name the class or an earlier base already gave.
+    """
+    names = []
+    for member in node.body:
+        if (
+            isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and member.name.startswith("test")
+            and member.name not in names
+        ):
+            names.append(member.name)
+    if id(node) in seen:
+        return names
+    seen = seen | {id(node)}
+    for base in node.bases:
+        if isinstance(base, ast.Name):
+            local = classes.get(base.id)
+            if local is not None:
+                for name in _test_method_names(local, classes, seen):
+                    if name not in names:
+                        names.append(name)
+    return names
+
+
+def selectable_test_items(source: str) -> list[str]:
+    """Return the selectable test items of a file in source order.
+
+    An item is the selector pytest uses below the file. A top level
+    test function is named by its own name. A test method inside a
+    class the default collection rules would collect is named by
+    its class and its method joined the way a pytest node joins
+    them, and methods inherited from a local base class are named
+    under the class pytest collects them on. Each selector appears
+    once, so a function or a method defined twice is judged once,
+    under the single node pytest can run, while the same method
+    name in two classes names two different items. A class name
+    defined twice binds its last definition, exactly as the module
+    does, and only that definition yields items. Classes nested
+    inside other classes are not selected.
+    """
+    tree = ast.parse(source)
+    bindings = _unittest_bindings(tree)
+    classes = {}
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef):
+            classes[node.name] = node
+    items: list[str] = []
+    for node in tree.body:
+        if isinstance(
+            node, (ast.FunctionDef, ast.AsyncFunctionDef)
+        ) and node.name.startswith("test"):
+            if node.name not in items:
+                items.append(node.name)
+        elif (
+            isinstance(node, ast.ClassDef)
+            and classes.get(node.name) is node
+            and _class_yields_methods(node, classes, bindings)
+        ):
+            for name in _test_method_names(node, classes, frozenset()):
+                selector = f"{node.name}::{name}"
+                if selector not in items:
+                    items.append(selector)
+    return items
+
+
+def has_unselected_test_shapes(source: str, items: list[str]) -> bool:
+    """Return True when a file holds test shaped definitions that
+    the selector did not name, beside at least one named item.
+
+    Test shaped means a top level function or a method in any class
+    in the file, nested classes included, whose name starts with
+    test. The count compares distinct runnable names, so inherited
+    methods named under a subclass do not read as unselected.
+    """
+    tree = ast.parse(source)
+    shaped = 0
+    top_level = set()
+    for node in tree.body:
+        if isinstance(
+            node, (ast.FunctionDef, ast.AsyncFunctionDef)
+        ) and node.name.startswith("test"):
+            top_level.add(node.name)
+    shaped += len(top_level)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            methods = {
+                member.name
+                for member in node.body
+                if isinstance(
+                    member, (ast.FunctionDef, ast.AsyncFunctionDef)
+                )
+                and member.name.startswith("test")
+            }
+            shaped += len(methods)
+    return shaped > len(items)

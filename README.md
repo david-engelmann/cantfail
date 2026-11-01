@@ -10,13 +10,15 @@ Agent written suites flood repos with tests that cannot fail for a real reason, 
 
 Local seed is done and the seed commit sits on the local main branch. Remote seed is pending a token access fix and writes returned 403 when verified on 2026-10-31. Setup is in progress locally on a branch and nothing has been pushed yet.
 
-The contract lives in CONTRACT.md. Setup obligations S1 to S4 are met. Slice 1 obligations C1 to C8 are met. Slice 2 obligations D1 to D6 are met on this branch when the local gate passes and the gate is python with pytest alone.
+The contract lives in CONTRACT.md. Setup obligations S1 to S4 are met. Slice 1 obligations C1 to C8 are met. Slice 2 obligations D1 to D6 are met. Slice 3 obligations E1 to E7 are met on this branch when the local gate passes and the gate is python with pytest alone.
 
 Slice 1 is built. It carries the static mock assertion fast path and the fixed mutation panel and the text and JSON reports, with a synthetic demo project and its generated report under examples.
 
 Slice 2 is built on top of slice 1. Verdicts are now recorded per test function and the file level verdict is a rollup derived from the function verdicts under the rule stated in the contract. The JSON report carries a top level schema field with the value cantfail-report/2 and both reports carry the per function verdicts. The static scan also flags a mock that was configured inside a helper or a fixture in the same file and bound to the test under another name. One pattern was considered and rejected in this slice and the contract records the rejection and its reason. The demo reports under examples are regenerated in the new format and the demo verdicts are unchanged at file level.
 
-Round 1 closed on 2026-10-31. Slice 2 was built, then audited and reviewed on two axes and attacked by a red team, and every material finding was fixed in the contract fix obligations FIX-1 to FIX-7 before the owner of this line approved the round. Closed rounds are 1 of 100.
+Slice 3 is built on top of slice 2. Test methods inside classes are now judged on their own beside the top level functions, named by their class and their method, and the file verdict rolls them up under the same rule as functions. The whole file judgement remains only for a test file with no selectable test items at all. The report schema is cantfail-report/3 because the functions list now carries method entries beside function entries, and the demo reports under examples are regenerated in the new format with every demo verdict unchanged.
+
+Round 1 closed on 2026-10-31. Slice 2 was built, then audited and reviewed on two axes and attacked by a red team, and every material finding was fixed in the contract fix obligations FIX-1 to FIX-7 before the owner of this line approved the round. Round 2 closed on 2026-10-31 the same way, with slice 3 audited and reviewed on two axes and attacked by a red team and every material finding fixed under FIX-8 to FIX-13 before the owner of this line approved the round. Closed rounds are 2 of 100.
 
 AGENTS.md is pending because the canonical template has not been supplied by the main chat. Pinned formats none. Part of the impatient programming portfolio, in the Gate Truth arc.
 

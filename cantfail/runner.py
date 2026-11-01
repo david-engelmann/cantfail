@@ -8,6 +8,12 @@ function runs in one shared scratch copy per test file. One scratch
 copy is made per mutant and every judged function runs inside that
 copy. The file level verdict is a rollup derived from the function
 verdicts and never from a separate whole file mutant run.
+
+Slice 3 widens the judged items. A selectable test method inside a
+class is judged on its own beside the top level functions, selected
+by its class and method node, and the rollup treats it exactly like
+a function. A test file with no selectable items at all falls back
+to the whole file judgement, so no file is silently skipped.
 """
 
 from __future__ import annotations
@@ -22,9 +28,9 @@ from pathlib import Path
 from .mutations import Mutant, generate_mutants
 from .static_scan import (
     StaticFinding,
-    has_class_based_tests,
+    has_unselected_test_shapes,
     scan_file,
-    top_level_test_functions,
+    selectable_test_items,
 )
 
 
@@ -163,6 +169,8 @@ class FileVerdict:
     outcomes: list[MutantOutcome] = field(default_factory=list)
     functions: list[FunctionVerdict] = field(default_factory=list)
     whole_file: bool = False
+    no_tests: bool = False
+    partial_selection: bool = False
 
     @property
     def survivors(self) -> list[MutantOutcome]:
@@ -189,9 +197,11 @@ class FileVerdict:
     def status(self) -> str:
         if self.whole_file:
             # Whole file judgement, the slice 1 behaviour, kept for
-            # files carrying class based tests, which per function
-            # verdicts do not select. This path serves those files
-            # and hand built verdicts in tests.
+            # files with no selectable test items at all, which per
+            # item verdicts cannot judge. This path serves those
+            # files and hand built verdicts in tests.
+            if self.no_tests:
+                return "no_applicable_mutants"
             if not self.baseline_ok:
                 return "baseline_failed"
             if not self.outcomes:
@@ -242,6 +252,9 @@ class FileVerdict:
             "path": self.path,
             "test_functions": self.test_functions,
             "status": self.status,
+            "whole_file": self.whole_file,
+            "no_tests": self.no_tests,
+            "partial_selection": self.partial_selection,
             "functions": [
                 item.to_dict() for item in self.functions
             ],
@@ -262,7 +275,7 @@ class Analysis:
 
     def to_dict(self) -> dict:
         return {
-            "schema": "cantfail-report/2",
+            "schema": "cantfail-report/3",
             "project": self.project,
             "static_findings": [
                 item.to_dict() for item in self.static_findings
@@ -318,16 +331,19 @@ def _run_pytest(
     project_copy: Path,
     test_file: Path,
     timeout: float,
-    function_name: str | None = None,
+    item_name: str | None = None,
 ) -> str:
-    """Run one test file or one test function in it.
+    """Run one test file or one test item in it.
 
-    Returns passed, failed, or timeout.
+    An item name is a top level function name or a class and
+    method pair, and either one completes the pytest node for the
+    file. Returns passed, failed, timeout, or empty, where empty is
+    the exit pytest gives when it collected nothing to run.
     """
     relative = test_file.relative_to(project_copy)
     target = str(relative)
-    if function_name is not None:
-        target = f"{relative}::{function_name}"
+    if item_name is not None:
+        target = f"{relative}::{item_name}"
     try:
         result = subprocess.run(
             [
@@ -346,7 +362,11 @@ def _run_pytest(
         )
     except subprocess.TimeoutExpired:
         return "timeout"
-    return "passed" if result.returncode == 0 else "failed"
+    if result.returncode == 0:
+        return "passed"
+    if result.returncode == 5:
+        return "empty"
+    return "failed"
 
 
 def _whole_file_outcomes(
@@ -354,11 +374,13 @@ def _whole_file_outcomes(
     test_file: Path,
     sources: list[Path],
     timeout: float,
-) -> tuple[bool, list[MutantOutcome]]:
+) -> tuple[bool, list[MutantOutcome], bool]:
     """Judge one test file as a whole, the slice 1 behaviour.
 
-    Used for files carrying class based tests, which per function
-    verdicts do not select, so the file is never silently skipped.
+    Used for files with no selectable test items at all, so a file
+    the per item verdicts cannot name is never silently skipped.
+    The third value says the baseline collected nothing at all,
+    which is a file with no tests in it rather than a failing one.
     """
     relative_test = test_file.relative_to(project)
     baseline_copy = _copy_project(project)
@@ -368,8 +390,10 @@ def _whole_file_outcomes(
         )
     finally:
         shutil.rmtree(baseline_copy.parent, ignore_errors=True)
+    if baseline == "empty":
+        return False, [], True
     if baseline != "passed":
-        return False, []
+        return False, [], False
     outcomes: list[MutantOutcome] = []
     for source_file in _paired_sources(test_file, sources):
         relative_source = source_file.relative_to(project)
@@ -399,7 +423,7 @@ def _whole_file_outcomes(
                 shutil.rmtree(
                     mutant_copy.parent, ignore_errors=True
                 )
-    return True, outcomes
+    return True, outcomes, False
 
 
 def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
@@ -415,19 +439,34 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
     verdicts: list[FileVerdict] = []
     for test_file in test_files:
         relative_test = test_file.relative_to(project)
-        functions = top_level_test_functions(
-            test_file.read_text(encoding="utf-8")
-        )
+        source_text = test_file.read_text(encoding="utf-8")
+        items = selectable_test_items(source_text)
+        if not items:
+            whole_ok, whole_outcomes, no_tests = _whole_file_outcomes(
+                project, test_file, sources, timeout
+            )
+            verdicts.append(
+                FileVerdict(
+                    path=str(relative_test),
+                    test_functions=[],
+                    baseline_ok=whole_ok,
+                    outcomes=whole_outcomes,
+                    functions=[],
+                    whole_file=True,
+                    no_tests=no_tests,
+                )
+            )
+            continue
         function_verdicts: list[FunctionVerdict] = []
 
         baseline_copy = _copy_project(project)
         try:
-            for name in functions:
+            for name in items:
                 baseline = _run_pytest(
                     baseline_copy,
                     baseline_copy / relative_test,
                     timeout,
-                    function_name=name,
+                    item_name=name,
                 )
                 function_verdicts.append(
                     FunctionVerdict(
@@ -462,7 +501,7 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
                             mutant_copy,
                             mutant_copy / relative_test,
                             timeout,
-                            function_name=function.name,
+                            item_name=function.name,
                         )
                         function.outcomes.append(
                             MutantOutcome(
@@ -477,31 +516,17 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
                         mutant_copy.parent, ignore_errors=True
                     )
 
-        if has_class_based_tests(
-            test_file.read_text(encoding="utf-8")
-        ):
-            whole_ok, whole_outcomes = _whole_file_outcomes(
-                project, test_file, sources, timeout
-            )
-            verdicts.append(
-                FileVerdict(
-                    path=str(relative_test),
-                    test_functions=functions,
-                    baseline_ok=whole_ok,
-                    outcomes=whole_outcomes,
-                    functions=function_verdicts,
-                    whole_file=True,
-                )
-            )
-            continue
         verdict = FileVerdict(
             path=str(relative_test),
-            test_functions=functions,
+            test_functions=items,
             baseline_ok=any(
                 item.baseline_ok for item in function_verdicts
             ),
             outcomes=_aggregate_outcomes(function_verdicts),
             functions=function_verdicts,
+            partial_selection=has_unselected_test_shapes(
+                source_text, items
+            ),
         )
         verdicts.append(verdict)
     return Analysis(

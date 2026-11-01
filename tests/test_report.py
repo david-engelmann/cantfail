@@ -42,7 +42,7 @@ def test_json_report_carries_the_schema_and_function_verdicts(
     project = write_project(tmp_path / "mixed", MIXED)
     analysis = analyse_project(project, timeout=60)
     data = json.loads(to_json(analysis))
-    assert data["schema"] == "cantfail-report/2"
+    assert data["schema"] == "cantfail-report/3"
     verdict = data["verdicts"][0]
     assert verdict["status"] == "can_fail"
     functions = {
@@ -61,7 +61,7 @@ def test_text_report_carries_the_function_verdicts(tmp_path):
     project = write_project(tmp_path / "mixed", MIXED)
     analysis = analyse_project(project, timeout=60)
     text = to_text(analysis)
-    assert "schema - cantfail-report/2" in text
+    assert "schema - cantfail-report/3" in text
     assert "function - test_double - can_fail" in text
     assert (
         "function - test_fetch_returns_what_it_was_told - "
