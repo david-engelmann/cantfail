@@ -28,6 +28,15 @@ definition of a governing definition name, the last definition
 of that name in the body that holds it, and the helper and
 fixture maps clear both of their entries on a redefinition, so
 the last definition alone decides what a name supplies.
+
+Slice 9 widens the fixture form of D5 beyond the analysed file.
+The fixture definitions of the project conftest files on the
+chain for a test file join the fixture table the form reads,
+under the precedence K2 states, so a test consuming a conftest
+supplied fixture is flagged the way a test consuming a fixture
+defined in its own file is flagged. A conftest contributes
+fixtures and never helpers, and the supply reaches the scan
+only, because the runs have always resolved it themselves.
 """
 
 from __future__ import annotations
@@ -190,18 +199,15 @@ def _helper_and_fixture_maps(
     the one literal configured for that call. A chain configured
     with two distinct literals inside one helper is ambiguous and
     that chain alone is left out. Other chains on the same mock
-    still count. A name defined again clears both entries before
-    the later definition is read, so the last definition alone
-    decides what the name supplies to either map, under FIX-25
-    for the fixture entry and J2 for the helper entry.
+    still count. The reading walks the effective definitions of
+    the module, the last definition of each name alone, so the
+    last definition decides what the name supplies to either map,
+    under FIX-25 for the fixture entry and J2 for the helper
+    entry.
     """
     helpers: dict[str, dict[str, str]] = {}
     fixtures: dict[str, dict[str, str]] = {}
-    for node in tree.body:
-        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            continue
-        helpers.pop(node.name, None)
-        fixtures.pop(node.name, None)
+    for node in _bound_definitions(tree.body).values():
         configured = _configured_chains(node)
         returned = set(_returned_names(node))
         table: dict[str, str] = {}
@@ -214,6 +220,83 @@ def _helper_and_fixture_maps(
         if _is_fixture_definition(node):
             fixtures[node.name] = table
     return helpers, fixtures
+
+
+def _fixture_names(tree: ast.Module) -> set[str]:
+    """The names one module defines as fixtures.
+
+    A name counts when its effective definition, the last
+    definition of the name in the module, carries a fixture
+    decorator under H2. A name whose effective definition is
+    plain registers no fixture, however an earlier definition
+    of the name was decorated, which is the reading pytest
+    gives the rebound name.
+    """
+    return {
+        name
+        for name, node in _bound_definitions(tree.body).items()
+        if _is_fixture_definition(node)
+    }
+
+
+def _merge_fixture_supply(
+    tree: ast.Module,
+    fixtures: dict[str, dict[str, str]],
+    supply_sources: list[str],
+) -> tuple[dict[str, dict[str, str]], set[int]]:
+    """Fold the conftest fixture supply into a fixture table.
+
+    The suppliers are read under the precedence of K2. The
+    supply sources arrive in chain order from the project root
+    down to the folder holding the analysed file, and the
+    analysed file itself is the nearest supplier of all, so the
+    fold runs from the farthest supplier to the nearest and the
+    module table is applied last. A supplier whose effective
+    definition of a name is a fixture clears the entry a farther
+    supplier recorded before its own table is applied, so a
+    nearer fixture that configures no table still shadows. A
+    supplier that defines the name without a fixture decorator
+    neither supplies nor clears, because pytest registers no
+    fixture under that name there and its search continues
+    outward. Only the fixture half of a supplier is read, so a
+    conftest contributes fixtures and never helpers.
+
+    The second value returned is the set of identities of the
+    tables in the merged result that a conftest supplier
+    contributed, so a finding drawn from one can name a conftest
+    fixture as its source rather than a fixture in the same
+    file.
+
+    A supplier whose source does not parse contributes nothing
+    and clears nothing, under FIX-26. The run inside the copy
+    decides the verdict for such a project, and it refuses the
+    conftest the way it refuses any broken file, so the scan
+    reading past the broken supplier invents no verdict.
+    """
+    merged: dict[str, dict[str, str]] = {}
+    suppliers = []
+    for source in supply_sources:
+        try:
+            supply_tree = ast.parse(source)
+        except SyntaxError:
+            continue
+        _supply_helpers, supply_fixtures = _helper_and_fixture_maps(
+            supply_tree
+        )
+        suppliers.append(
+            (_fixture_names(supply_tree), supply_fixtures, True)
+        )
+    suppliers.append((_fixture_names(tree), fixtures, False))
+    supplied: set[int] = set()
+    for names, table, from_supply in suppliers:
+        for name in names:
+            old = merged.pop(name, None)
+            if old is not None:
+                supplied.discard(id(old))
+        merged.update(table)
+        if from_supply:
+            supplied.update(id(item) for item in table.values())
+    return merged, supplied
 
 
 def _statement_lists(node: ast.AST):
@@ -231,6 +314,7 @@ def _d5_findings_in_function(
     helpers: dict[str, dict[str, str]],
     fixtures: dict[str, dict[str, str]],
     path: str,
+    supplied: frozenset[int] = frozenset(),
 ) -> list[StaticFinding]:
     """Helper and fixture findings inside one function scope.
 
@@ -242,25 +326,37 @@ def _d5_findings_in_function(
     copy of the enclosing bindings plus its own fixture arguments,
     the way a closure reads the enclosing scope, so an assertion
     inside it is reported once and never once per enclosing call.
+    The supplied set holds the identities of the fixture tables a
+    conftest supplier contributed under K1, and a binding drawn
+    from one is tracked beside the binding itself so the finding
+    can name a conftest fixture as its source.
     """
     findings: list[StaticFinding] = []
     env: dict[str, dict[str, str]] = {}
+    origin: dict[str, bool] = {}
     for arg in func.args.args + func.args.kwonlyargs:
         if arg.arg in fixtures:
             env[arg.arg] = fixtures[arg.arg]
+            origin[arg.arg] = id(fixtures[arg.arg]) in supplied
 
     def visit(
-        statements: list[ast.stmt], env: dict[str, dict[str, str]]
+        statements: list[ast.stmt],
+        env: dict[str, dict[str, str]],
+        origin: dict[str, bool],
     ) -> None:
         for statement in statements:
             if isinstance(
                 statement, (ast.FunctionDef, ast.AsyncFunctionDef)
             ):
                 child = dict(env)
+                child_origin = dict(origin)
                 for arg in statement.args.args + statement.args.kwonlyargs:
                     if arg.arg in fixtures:
                         child[arg.arg] = fixtures[arg.arg]
-                visit(statement.body, child)
+                        child_origin[arg.arg] = (
+                            id(fixtures[arg.arg]) in supplied
+                        )
+                visit(statement.body, child, child_origin)
                 continue
             if isinstance(statement, ast.Assign) and len(
                 statement.targets
@@ -273,16 +369,20 @@ def _d5_findings_in_function(
                     and value.func.id in helpers
                 ):
                     env[name] = helpers[value.func.id]
+                    origin[name] = False
                 else:
                     env.pop(name, None)
+                    origin.pop(name, None)
             if isinstance(statement, ast.Assert):
-                finding = _d5_assert_finding(statement, env, path)
+                finding = _d5_assert_finding(
+                    statement, env, path, origin
+                )
                 if finding is not None:
                     findings.append(finding)
             for nested in _statement_lists(statement):
-                visit(nested, env)
+                visit(nested, env, origin)
 
-    visit(func.body, env)
+    visit(func.body, env, origin)
     return findings
 
 
@@ -290,6 +390,7 @@ def _d5_assert_finding(
     node: ast.Assert,
     env: dict[str, dict[str, str]],
     path: str,
+    origin: dict[str, bool] | None = None,
 ) -> StaticFinding | None:
     test = node.test
     if not (
@@ -313,6 +414,11 @@ def _d5_assert_finding(
         if table is not None and table.get(chain) == ast.unparse(
             other_node
         ):
+            source = (
+                "a conftest fixture"
+                if origin is not None and origin.get(root)
+                else "a helper or fixture in the same file"
+            )
             return StaticFinding(
                 kind="mock_return_value",
                 path=path,
@@ -320,8 +426,7 @@ def _d5_assert_finding(
                 detail=(
                     "assertion checks a call on a mock against "
                     "the return value that call was assigned in "
-                    "a helper or fixture in the same file, "
-                    f"{ast.unparse(other_node)}"
+                    f"{source}, {ast.unparse(other_node)}"
                 ),
             )
     return None
@@ -382,6 +487,7 @@ def scan_source(
     source: str,
     path: str,
     settings: CollectionSettings | None = None,
+    supply_sources: list[str] | None = None,
 ) -> list[StaticFinding]:
     """Scan one test file source string and return its findings.
 
@@ -396,6 +502,14 @@ def scan_source(
     definition name under J1, so a name the body rebinds to a
     fixture withholds the findings of every definition of the
     name, and a name whose last definition is plain gives them.
+
+    The supply sources argument carries the source strings of
+    the project conftest files on the chain for the file under
+    K1, in chain order from the project root down to the folder
+    holding the file. Their fixture definitions join the fixture
+    table the fixture form of D5 reads, under the precedence of
+    K2, and a scan made with no supply argument reads the
+    analysed file alone, exactly as the earlier slices did.
     """
     if settings is None:
         settings = DEFAULT_SETTINGS
@@ -435,6 +549,12 @@ def scan_source(
     return_values: dict[str, str] = {}
     read_from_mock: dict[str, str] = {}
     helpers, fixtures = _helper_and_fixture_maps(tree)
+    supplied: frozenset[int] = frozenset()
+    if supply_sources:
+        fixtures, supplied_ids = _merge_fixture_supply(
+            tree, fixtures, supply_sources
+        )
+        supplied = frozenset(supplied_ids)
 
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign) and len(node.targets) == 1:
@@ -543,7 +663,9 @@ def scan_source(
             and in_test_function(node)
         ):
             findings.extend(
-                _d5_findings_in_function(node, helpers, fixtures, path)
+                _d5_findings_in_function(
+                    node, helpers, fixtures, path, supplied
+                )
             )
     findings.sort(key=lambda item: (item.line, item.kind))
     return findings
@@ -553,10 +675,15 @@ def scan_file(
     path: Path,
     display_path: str,
     settings: CollectionSettings | None = None,
+    supply_sources: list[str] | None = None,
 ) -> list[StaticFinding]:
-    """Scan one test file on disk, under the settings of G1."""
+    """Scan one test file on disk, under the settings of G1 and
+    the conftest fixture supply of K1."""
     return scan_source(
-        path.read_text(encoding="utf-8"), display_path, settings
+        path.read_text(encoding="utf-8"),
+        display_path,
+        settings,
+        supply_sources,
     )
 
 
