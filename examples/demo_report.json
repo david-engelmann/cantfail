@@ -1,0 +1,113 @@
+{
+  "project": "demo_project",
+  "static_findings": [
+    {
+      "detail": "assertion checks a value read from a mock against the return value the mock was assigned, 42",
+      "kind": "mock_return_value",
+      "line": 8,
+      "path": "test_greeter.py"
+    }
+  ],
+  "verdicts": [
+    {
+      "mutants": [
+        {
+          "detail": "return value x + 1",
+          "kind": "return_none",
+          "line": 2,
+          "result": "killed",
+          "source": "calc.py"
+        },
+        {
+          "detail": "return value age >= 18",
+          "kind": "return_none",
+          "line": 6,
+          "result": "killed",
+          "source": "calc.py"
+        },
+        {
+          "detail": "return value True",
+          "kind": "return_none",
+          "line": 10,
+          "result": "killed",
+          "source": "calc.py"
+        },
+        {
+          "detail": "comparison age >= 18 operator 0",
+          "kind": "compare_invert",
+          "line": 6,
+          "result": "killed",
+          "source": "calc.py"
+        },
+        {
+          "detail": "boolean constant True",
+          "kind": "bool_negate",
+          "line": 10,
+          "result": "killed",
+          "source": "calc.py"
+        },
+        {
+          "detail": "numeric constant 1 moved plus one",
+          "kind": "constant_shift",
+          "line": 2,
+          "result": "killed",
+          "source": "calc.py"
+        },
+        {
+          "detail": "numeric constant 1 moved minus one",
+          "kind": "constant_shift",
+          "line": 2,
+          "result": "killed",
+          "source": "calc.py"
+        },
+        {
+          "detail": "numeric constant 18 moved plus one",
+          "kind": "constant_shift",
+          "line": 6,
+          "result": "killed",
+          "source": "calc.py"
+        },
+        {
+          "detail": "numeric constant 18 moved minus one",
+          "kind": "constant_shift",
+          "line": 6,
+          "result": "killed",
+          "source": "calc.py"
+        }
+      ],
+      "path": "test_calc.py",
+      "status": "can_fail",
+      "surviving_mutants": [],
+      "test_functions": [
+        "test_add_one",
+        "test_is_adult_boundary",
+        "test_enabled"
+      ]
+    },
+    {
+      "mutants": [
+        {
+          "detail": "return value 'hello'",
+          "kind": "return_none",
+          "line": 2,
+          "result": "survived",
+          "source": "greeter.py"
+        }
+      ],
+      "path": "test_greeter.py",
+      "status": "decorative_candidate",
+      "surviving_mutants": [
+        {
+          "detail": "return value 'hello'",
+          "kind": "return_none",
+          "line": 2,
+          "result": "survived",
+          "source": "greeter.py"
+        }
+      ],
+      "test_functions": [
+        "test_fetch_returns_what_it_was_told"
+      ]
+    }
+  ]
+}

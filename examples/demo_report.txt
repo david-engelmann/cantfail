@@ -1,0 +1,18 @@
+cantfail report
+project - demo_project
+
+static findings
+test_greeter.py line 8 - mock_return_value - assertion checks a value read from a mock against the return value the mock was assigned, 42
+
+test file verdicts
+test_calc.py - can_fail
+  test - test_add_one
+  test - test_is_adult_boundary
+  test - test_enabled
+  this file turned red under 9 of 9 mutants in the fixed panel
+test_greeter.py - decorative_candidate
+  test - test_fetch_returns_what_it_was_told
+  decorative candidate - this file stayed green under every applicable mutant in the fixed panel
+  mutant that walked through - greeter.py - return_none at line 2 - return value 'hello'
+
+A surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.
