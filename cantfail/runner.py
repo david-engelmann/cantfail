@@ -42,6 +42,17 @@ I3, so the run inside the copy decides on the same source the
 selector read, and the analysis records where the governing
 source was found for the disclosure of I4 beside any non
 default settings in force.
+
+Slice 9 passes the conftest fixture supply of an analysed
+project to the static scan under K1. For each test file the
+runner reads the conftest files on the chain from the project
+root down to the folder holding the file and hands their
+sources to the scan, so the fixture form of D5 reads the supply
+pytest itself resolves for the file. The verdict path is
+untouched, because the runs inside the scratch copies have
+always resolved the supply themselves, and discovery still
+classifies a conftest as neither a test file nor a source
+module under K3, so it earns no verdict and no finding.
 """
 
 from __future__ import annotations
@@ -56,6 +67,7 @@ from pathlib import Path
 from .mutations import Mutant, generate_mutants
 from .settings import (
     CollectionSettings,
+    _folder_source,
     file_matches,
     load_collection_settings_with_source,
 )
@@ -362,6 +374,55 @@ def _discover(
     return test_files, sources
 
 
+def _chain_floor(project: Path, test_file: Path) -> Path:
+    """The highest folder the conftest chain for a file reads.
+
+    Pytest loads the conftest files from its rootdir down, and
+    its rootdir is set by the deepest folder on the path from
+    the test file upward that holds a governing source, the
+    search slice 7 already arbitrates, with a bare
+    pyproject.toml anchoring the rootdir the way pytest anchors
+    it. The chain under FIX-27 starts at that folder, so the
+    scan reads the supply the tool's own runs resolve. A path
+    holding no governing source anywhere up to the project root
+    keeps the project root as the floor.
+    """
+    folder = test_file.parent
+    while True:
+        if _folder_source(folder) is not None or (
+            folder / "pyproject.toml"
+        ).is_file():
+            return folder
+        if folder == project:
+            return project
+        folder = folder.parent
+
+
+def _conftest_chain(project: Path, test_file: Path) -> list[str]:
+    """The conftest sources on the chain for one test file.
+
+    The chain runs from the chain floor down to the folder
+    holding the test file, under K1 as bounded by FIX-27, and
+    holds the source of each conftest file on that path that
+    exists, in that order. No folder above the project root is
+    read, because the project root is the analysis boundary of
+    the tool.
+    """
+    floor = _chain_floor(project, test_file)
+    folders = []
+    folder = test_file.parent
+    while folder != floor:
+        folders.append(folder)
+        folder = folder.parent
+    folders.append(floor)
+    sources = []
+    for folder in reversed(folders):
+        candidate = folder / "conftest.py"
+        if candidate.is_file():
+            sources.append(candidate.read_text(encoding="utf-8"))
+    return sources
+
+
 def _paired_sources(test_file: Path, sources: list[Path]) -> list[Path]:
     stem = test_file.name
     if stem.startswith("test_"):
@@ -520,7 +581,14 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
     static_findings: list[StaticFinding] = []
     for test_file in test_files:
         display = str(test_file.relative_to(project))
-        static_findings.extend(scan_file(test_file, display, settings))
+        static_findings.extend(
+            scan_file(
+                test_file,
+                display,
+                settings,
+                _conftest_chain(project, test_file),
+            )
+        )
 
     verdicts: list[FileVerdict] = []
     for test_file in test_files:
