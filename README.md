@@ -8,7 +8,13 @@ Agent written suites flood repos with tests that cannot fail for a real reason, 
 
 ## Status
 
-Seeded in October 2026. The build has not started. Part of the impatient programming portfolio, in the Gate Truth arc.
+Local seed is done and the seed commit sits on the local main branch. Remote seed is pending a token access fix and writes returned 403 when verified on 2026-10-31. Setup is in progress locally on a branch and nothing has been pushed yet.
+
+The contract lives in CONTRACT.md. Setup obligations S1 to S4 are met. Slice 1 obligations C1 to C8 are met on this branch when the local gate passes and the gate is python with pytest alone.
+
+Slice 1 is built. It carries the static mock assertion fast path and the fixed mutation panel and the text and JSON reports, with a synthetic demo project and its generated report under examples. Closed rounds are 0 of 100.
+
+AGENTS.md is pending because the canonical template has not been supplied by the main chat. Pinned formats none. Part of the impatient programming portfolio, in the Gate Truth arc.
 
 ## Licence
 
