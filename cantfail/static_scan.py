@@ -381,6 +381,53 @@ def _follow_delegation(
     )
 
 
+_TRY_TYPES: tuple[type, ...] = (ast.Try,) + (
+    (ast.TryStar,) if hasattr(ast, "TryStar") else ()
+)
+
+
+def _module_definitions(
+    tree: ast.Module,
+) -> dict[str, ast.FunctionDef | ast.AsyncFunctionDef]:
+    """The effective function definitions of one module, under N1.
+
+    The stream holds the definitions standing in the module
+    body and the definitions standing in the statement lists a
+    top level conditional or try statement holds, taken in
+    source order, where a conditional contributes its body and
+    its else branch and a try contributes its body and each
+    handler and its else and finally lists, and the descent is
+    recursive, so a conditional standing inside a try and a
+    conditional standing inside a conditional are read the way
+    a conditional standing at the top level is read. The
+    stream never crosses into a function definition or a class
+    definition. The last definition of a name in the stream is
+    the effective definition of that name, under the discipline
+    J2 states for the definitions standing in one body, and no
+    condition is ever evaluated, under the limits N4 states.
+    """
+    bound: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
+
+    def visit(statements: list[ast.stmt]) -> None:
+        for node in statements:
+            if isinstance(
+                node, (ast.FunctionDef, ast.AsyncFunctionDef)
+            ):
+                bound[node.name] = node
+            elif isinstance(node, ast.If):
+                visit(node.body)
+                visit(node.orelse)
+            elif isinstance(node, _TRY_TYPES):
+                visit(node.body)
+                for handler in node.handlers:
+                    visit(handler.body)
+                visit(node.orelse)
+                visit(node.finalbody)
+
+    visit(tree.body)
+    return bound
+
+
 def _helper_and_fixture_maps(
     tree: ast.Module,
 ) -> tuple[dict[str, dict[str, str]], dict[str, dict[str, str]]]:
@@ -414,10 +461,17 @@ def _helper_and_fixture_maps(
     return reading does not apply to a definition whose first
     provision point is a delegation, because a return standing
     in a generator body provides nothing a test receives.
+
+    The definitions are read from the one module stream of
+    N1, so a definition standing under a top level conditional
+    or inside a top level try stands in the maps exactly as
+    one standing directly in the module body does, and the
+    delegation lookup reads its delegate from that same
+    stream.
     """
     helpers: dict[str, dict[str, str]] = {}
     fixtures: dict[str, dict[str, str]] = {}
-    definitions = _bound_definitions(tree.body)
+    definitions = _module_definitions(tree)
     for node in definitions.values():
         table: dict[str, str] | None = None
         if isinstance(node, ast.FunctionDef) and (
@@ -459,11 +513,15 @@ def _fixture_names(tree: ast.Module) -> set[str]:
     decorator under H2. A name whose effective definition is
     plain registers no fixture, however an earlier definition
     of the name was decorated, which is the reading pytest
-    gives the rebound name.
+    gives the rebound name. The effective definition is read
+    from the one module stream of N1, so a definition standing
+    under a top level conditional or inside a top level try
+    counts exactly as one standing directly in the module
+    body does.
     """
     return {
         name
-        for name, node in _bound_definitions(tree.body).items()
+        for name, node in _module_definitions(tree).items()
         if _is_fixture_definition(node)
     }
 
@@ -731,6 +789,11 @@ def scan_source(
     definition name under J1, so a name the body rebinds to a
     fixture withholds the findings of every definition of the
     name, and a name whose last definition is plain gives them.
+    The effective definition is the one the module stream of
+    N1 gives for the name, so a redefinition standing under a
+    top level conditional or inside a top level try decides
+    the gate exactly as one standing directly in the module
+    body does.
 
     The supply sources argument carries the source strings of
     the project conftest files on the chain for the file under
@@ -744,7 +807,7 @@ def scan_source(
         settings = DEFAULT_SETTINGS
     tree = ast.parse(source)
     parents = _parent_map(tree)
-    module_definitions = _bound_definitions(tree.body)
+    module_definitions = _module_definitions(tree)
     class_definitions = {
         id(node): _bound_definitions(node.body)
         for node in tree.body
