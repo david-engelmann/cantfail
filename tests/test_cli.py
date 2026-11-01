@@ -21,7 +21,11 @@ def test_cli_prints_a_json_report_with_the_json_flag(tmp_path, capsys):
     out = capsys.readouterr().out
     assert exit_code == 0
     data = json.loads(out)
+    assert data["schema"] == "cantfail-report/2"
     assert data["verdicts"][0]["status"] == "decorative_candidate"
+    assert data["verdicts"][0]["functions"][0]["status"] == (
+        "decorative_candidate"
+    )
 
 
 def test_cli_rejects_a_missing_project(tmp_path, capsys):

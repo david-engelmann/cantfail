@@ -59,6 +59,116 @@ def test_real_result_assertion_is_not_flagged():
     assert scan_source(source, "test_compute.py") == []
 
 
+def test_helper_configured_mock_assertion_is_flagged():
+    source = (
+        "from unittest.mock import Mock\n"
+        "\n"
+        "def make_client():\n"
+        "    svc = Mock()\n"
+        "    svc.fetch.return_value = 42\n"
+        "    return svc\n"
+        "\n"
+        "def test_fetch():\n"
+        "    client = make_client()\n"
+        "    assert client.fetch() == 42\n"
+    )
+    findings = scan_source(source, "test_helper.py")
+    assert [item.kind for item in findings] == ["mock_return_value"]
+    assert findings[0].line == 10
+    assert "helper or fixture" in findings[0].detail
+
+
+def test_fixture_configured_mock_assertion_is_flagged():
+    source = (
+        "import pytest\n"
+        "from unittest.mock import Mock\n"
+        "\n"
+        "@pytest.fixture\n"
+        "def client():\n"
+        "    built = Mock()\n"
+        "    built.fetch.return_value = 42\n"
+        "    return built\n"
+        "\n"
+        "def test_fetch(client):\n"
+        "    assert client.fetch() == 42\n"
+    )
+    findings = scan_source(source, "test_fixture.py")
+    assert [item.kind for item in findings] == ["mock_return_value"]
+    assert findings[0].line == 11
+    assert "helper or fixture" in findings[0].detail
+
+
+def test_helper_mock_asserted_against_a_different_value_is_not_flagged():
+    source = (
+        "from unittest.mock import Mock\n"
+        "\n"
+        "def make_client():\n"
+        "    svc = Mock()\n"
+        "    svc.fetch.return_value = 42\n"
+        "    return svc\n"
+        "\n"
+        "def test_fetch():\n"
+        "    client = make_client()\n"
+        "    assert client.fetch() == 43\n"
+    )
+    assert scan_source(source, "test_helper.py") == []
+
+
+def test_helper_returning_an_unconfigured_object_is_not_flagged():
+    source = (
+        "def make_thing():\n"
+        "    thing = object()\n"
+        "    return thing\n"
+        "\n"
+        "def test_thing():\n"
+        "    thing = make_thing()\n"
+        "    assert thing() == 42\n"
+    )
+    assert scan_source(source, "test_thing.py") == []
+
+
+def test_helper_with_two_methods_configured_flags_each_call():
+    source = (
+        "from unittest.mock import Mock\n"
+        "\n"
+        "def make_client():\n"
+        "    svc = Mock()\n"
+        "    svc.fetch.return_value = 42\n"
+        "    svc.send.return_value = 7\n"
+        "    return svc\n"
+        "\n"
+        "def test_fetch():\n"
+        "    client = make_client()\n"
+        "    assert client.fetch() == 42\n"
+        "\n"
+        "def test_send():\n"
+        "    client = make_client()\n"
+        "    assert client.send() == 7\n"
+    )
+    findings = scan_source(source, "test_helper.py")
+    assert [item.kind for item in findings] == [
+        "mock_return_value",
+        "mock_return_value",
+    ]
+
+
+def test_helper_with_one_call_configured_twice_is_not_flagged():
+    source = (
+        "from unittest.mock import Mock\n"
+        "\n"
+        "def make_client():\n"
+        "    svc = Mock()\n"
+        "    svc.fetch.return_value = 42\n"
+        "    svc.fetch.return_value = 43\n"
+        "    return svc\n"
+        "\n"
+        "def test_fetch():\n"
+        "    client = make_client()\n"
+        "    assert client.fetch() == 42\n"
+    )
+    assert scan_source(source, "test_helper.py") == []
+
+
 def test_self_comparison_is_flagged():
     source = (
         "def test_same():\n"
