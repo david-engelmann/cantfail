@@ -24,6 +24,14 @@ Slice 5 passes those same settings to the static scan under G1,
 so a static finding is a claim about a test function as the
 project settings name test functions, and selection and verdicts
 are untouched by the scan change under G4.
+
+Slice 6 retires the fixture parting on the paths the selector
+and the scan in the scan module provide. A fixture decorated
+definition names no item and earns no verdict entry, with the
+carve outs H3 states for TestCase methods and fixture decorated
+classes, and a file left with fixtures alone falls to the whole
+file judgement and reads as a file with no tests when its run
+collects nothing.
 """
 
 from __future__ import annotations

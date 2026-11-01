@@ -14,6 +14,13 @@ python_functions setting of the analysed project under G2. The
 maps the scan builds stay file wide, because a helper is not a
 test function and is never required to be one for the test that
 binds its mock to be flagged.
+
+Slice 6 retires the fixture parting on both paths. A definition
+that carries a fixture decorator is not a test function for the
+scan and never a selectable item for the selector, under the one
+reading of the fixture spellings in this module, with the carve
+outs H3 states for TestCase classes and fixture decorated
+classes on the verdict path.
 """
 
 from __future__ import annotations
@@ -45,6 +52,62 @@ class StaticFinding:
             "line": self.line,
             "detail": self.detail,
         }
+
+
+def _is_fixture_decorator(decorator: ast.expr) -> bool:
+    """Return True when one decorator is a fixture decorator
+    under H2. The spellings are the attribute fixture of the name
+    pytest and the bare name fixture, each with or without a call
+    and its arguments. The reading is by name and cannot see what
+    an import binds, so an attribute of that name on another
+    object is not one and a longer name containing the word is
+    not one either."""
+    target = decorator
+    if isinstance(target, ast.Call):
+        target = target.func
+    if isinstance(target, ast.Name):
+        return target.id == "fixture"
+    if isinstance(target, ast.Attribute):
+        return (
+            target.attr == "fixture"
+            and isinstance(target.value, ast.Name)
+            and target.value.id == "pytest"
+        )
+    return False
+
+
+def _is_fixture_definition(
+    node: ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef,
+) -> bool:
+    """Return True when a definition carries a fixture decorator.
+    Any one fixture decorator in the list is enough."""
+    return any(
+        _is_fixture_decorator(item) for item in node.decorator_list
+    )
+
+
+def _module_has_fixture_class(tree: ast.Module) -> bool:
+    """Return True when a fixture decorated class executes at import.
+
+    Applying a fixture decorator to a class raises when the class
+    statement runs, so a module holding such a class collects
+    nothing under pytest and its fate is the whole file run, under
+    FIX-23. Class statements at module level and inside class
+    bodies run at import. A class defined inside a function runs
+    only when the function is called, so it does not poison the
+    module.
+    """
+
+    def visit(statements) -> bool:
+        for node in statements:
+            if isinstance(node, ast.ClassDef):
+                if _is_fixture_definition(node):
+                    return True
+                if visit(node.body):
+                    return True
+        return False
+
+    return visit(tree.body)
 
 
 def _is_return_value(node: ast.AST) -> bool:
@@ -127,6 +190,7 @@ def _helper_and_fixture_maps(
     for node in tree.body:
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
+        fixtures.pop(node.name, None)
         configured = _configured_chains(node)
         returned = set(_returned_names(node))
         table: dict[str, str] = {}
@@ -136,8 +200,7 @@ def _helper_and_fixture_maps(
         if not table:
             continue
         helpers[node.name] = table
-        decorators = [ast.unparse(item) for item in node.decorator_list]
-        if any("fixture" in item for item in decorators):
+        if _is_fixture_definition(node):
             fixtures[node.name] = table
     return helpers, fixtures
 
@@ -312,8 +375,10 @@ def scan_source(
 
     def in_test_function(node: ast.AST) -> bool:
         governing = _governing_function(node, parents)
-        return governing is not None and _function_name_matches(
-            governing.name, settings
+        return (
+            governing is not None
+            and _function_name_matches(governing.name, settings)
+            and not _is_fixture_definition(governing)
         )
 
     findings: list[StaticFinding] = []
@@ -586,8 +651,12 @@ def _class_yields_methods(node, classes, bindings, settings):
     force when one is set, with its patterns replacing the Test
     prefix entirely, and the Test prefix itself when no setting
     is in force. A class that sets __test__ to False yields
-    nothing, whatever its name or bases.
+    nothing, whatever its name or bases. A class that carries a
+    fixture decorator yields nothing either, under H3, because
+    pytest refuses the shape when the decorator is applied.
     """
+    if _is_fixture_definition(node):
+        return False
     if _sets_test_false(node):
         return False
     if _is_testcase_class(node, classes, bindings, frozenset()):
@@ -599,34 +668,56 @@ def _class_yields_methods(node, classes, bindings, settings):
     return node.name.startswith("Test")
 
 
-def _test_method_names(node, classes, seen, settings):
-    """Test method names of a class, its own first, then inherited.
+def _test_method_nodes(node, classes, seen):
+    """The effective method definitions of a class, by name.
 
-    A name counts as a test method name under the matching rule of
-    _function_name_matches. Inherited names come from local base
-    classes in base order, skipping any name the class or an
-    earlier base already gave.
+    The map reads the definition each name resolves to on this
+    class, under H1. The last definition inside the class itself
+    wins for a name, and a name the class does not define comes
+    from its local base classes in base order. Own names come
+    first in the order the class body first gives them, then
+    inherited names in base order.
     """
-    names = []
+    nodes = {}
     for member in node.body:
-        if (
-            isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))
-            and _function_name_matches(member.name, settings)
-            and member.name not in names
+        if isinstance(
+            member, (ast.FunctionDef, ast.AsyncFunctionDef)
         ):
-            names.append(member.name)
+            nodes[member.name] = member
     if id(node) in seen:
-        return names
+        return nodes
     seen = seen | {id(node)}
     for base in node.bases:
         if isinstance(base, ast.Name):
             local = classes.get(base.id)
             if local is not None:
-                for name in _test_method_names(
-                    local, classes, seen, settings
-                ):
-                    if name not in names:
-                        names.append(name)
+                for name, member in _test_method_nodes(
+                    local, classes, seen
+                ).items():
+                    if name not in nodes:
+                        nodes[name] = member
+    return nodes
+
+
+def _test_method_names(node, classes, seen, settings, exclude_fixtures):
+    """Test method names of a class, its own first, then inherited.
+
+    A name counts as a test method name under the matching rule of
+    _function_name_matches, read on the effective definition of
+    the name. When exclude_fixtures holds, a name whose effective
+    definition carries a fixture decorator is not a test method
+    name, under H1. The caller clears the flag for a class that
+    resolves to a unittest TestCase, under the carve out of H3.
+    """
+    names = []
+    for name, member in _test_method_nodes(
+        node, classes, seen
+    ).items():
+        if not _function_name_matches(name, settings):
+            continue
+        if exclude_fixtures and _is_fixture_definition(member):
+            continue
+        names.append(name)
     return names
 
 
@@ -649,29 +740,61 @@ def selectable_test_items(
     inside other classes are not selected. The settings argument
     carries the collection naming settings of F1 to F3, and the
     defaults are in force when it is not given.
+
+    Slice 6 adds the fixture reading of H1 to H3. A definition
+    that carries a fixture decorator is never an item, read on
+    the definition the module or the class binds for the name,
+    except that a method of a class resolving to a unittest
+    TestCase keeps its item under the carve out of H3. A module
+    holding a fixture decorated class names no items at all
+    under FIX-23, because pytest collects nothing from it and
+    its fate is the whole file run.
     """
     if settings is None:
         settings = DEFAULT_SETTINGS
     tree = ast.parse(source)
+    if _module_has_fixture_class(tree):
+        return []
     bindings = _unittest_bindings(tree)
     classes = {}
+    functions = {}
     for node in tree.body:
         if isinstance(node, ast.ClassDef):
             classes[node.name] = node
+        elif isinstance(
+            node, (ast.FunctionDef, ast.AsyncFunctionDef)
+        ):
+            functions[node.name] = node
     items: list[str] = []
+    seen_functions: set[str] = set()
     for node in tree.body:
         if isinstance(
             node, (ast.FunctionDef, ast.AsyncFunctionDef)
-        ) and _function_name_matches(node.name, settings):
-            if node.name not in items:
+        ):
+            if node.name in seen_functions:
+                continue
+            seen_functions.add(node.name)
+            bound = functions[node.name]
+            if (
+                _function_name_matches(node.name, settings)
+                and not _is_fixture_definition(bound)
+                and node.name not in items
+            ):
                 items.append(node.name)
         elif (
             isinstance(node, ast.ClassDef)
             and classes.get(node.name) is node
             and _class_yields_methods(node, classes, bindings, settings)
         ):
+            exclude_fixtures = not _is_testcase_class(
+                node, classes, bindings, frozenset()
+            )
             for name in _test_method_names(
-                node, classes, frozenset(), settings
+                node,
+                classes,
+                frozenset(),
+                settings,
+                exclude_fixtures,
             ):
                 selector = f"{node.name}::{name}"
                 if selector not in items:
@@ -704,28 +827,43 @@ def has_unselected_test_shapes(
     in the file, nested classes included, whose name is test shaped
     under _shaped_name. The count compares distinct runnable
     names, so inherited methods named under a subclass do not read
-    as unselected.
+    as unselected. A definition that carries a fixture decorator
+    does not count as a test shape, under H6, because it is not a
+    test the verdict failed to cover, and the fixture reading
+    follows the effective definition under FIX-22, so for a name
+    defined more than once the last definition in its body decides
+    whether the name counts. A module holding a fixture decorated
+    class counts no shapes at all under FIX-23, because pytest
+    collects nothing from such a module.
     """
     if settings is None:
         settings = DEFAULT_SETTINGS
     tree = ast.parse(source)
+    if _module_has_fixture_class(tree):
+        return False
     shaped = 0
-    top_level = set()
+    top_level = {}
     for node in tree.body:
         if isinstance(
             node, (ast.FunctionDef, ast.AsyncFunctionDef)
-        ) and _shaped_name(node.name, settings):
-            top_level.add(node.name)
-    shaped += len(top_level)
+        ):
+            top_level[node.name] = (
+                not _is_fixture_definition(node)
+                and _shaped_name(node.name, settings)
+            )
+    shaped += sum(1 for counts in top_level.values() if counts)
     for node in ast.walk(tree):
         if isinstance(node, ast.ClassDef):
-            methods = {
-                member.name
-                for member in node.body
+            methods = {}
+            for member in node.body:
                 if isinstance(
                     member, (ast.FunctionDef, ast.AsyncFunctionDef)
-                )
-                and _shaped_name(member.name, settings)
-            }
-            shaped += len(methods)
+                ):
+                    methods[member.name] = (
+                        not _is_fixture_definition(member)
+                        and _shaped_name(member.name, settings)
+                    )
+            shaped += sum(
+                1 for counts in methods.values() if counts
+            )
     return shaped > len(items)
