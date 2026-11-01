@@ -2,6 +2,12 @@
 
 Every run works on a scratch copy of the analysed project made in a
 temporary directory. The analysed files are never opened for writing.
+
+Slice 2 judges every test function on its own. The baseline for each
+function runs in one shared scratch copy per test file. One scratch
+copy is made per mutant and every judged function runs inside that
+copy. The file level verdict is a rollup derived from the function
+verdicts and never from a separate whole file mutant run.
 """
 
 from __future__ import annotations
@@ -14,12 +20,17 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .mutations import Mutant, generate_mutants
-from .static_scan import StaticFinding, scan_file, test_function_names
+from .static_scan import (
+    StaticFinding,
+    has_class_based_tests,
+    scan_file,
+    top_level_test_functions,
+)
 
 
 @dataclass
 class MutantOutcome:
-    """The outcome of one mutant against one test file."""
+    """The outcome of one mutant against one test file or function."""
 
     source_path: str
     mutant: Mutant
@@ -35,18 +46,24 @@ class MutantOutcome:
         return data
 
 
-@dataclass
-class FileVerdict:
-    """The verdict for one test file."""
 
-    path: str
-    test_functions: list[str]
+
+@dataclass
+class FunctionVerdict:
+    """The verdict for one test function."""
+
+    name: str
     baseline_ok: bool
     outcomes: list[MutantOutcome] = field(default_factory=list)
+    baseline_timed_out: bool = False
 
     @property
     def survivors(self) -> list[MutantOutcome]:
-        return [item for item in self.outcomes if not item.killed]
+        return [
+            item
+            for item in self.outcomes
+            if not item.killed and not item.timed_out
+        ]
 
     @property
     def decorative_candidate(self) -> bool:
@@ -59,19 +76,175 @@ class FileVerdict:
             )
         )
 
-    def to_dict(self) -> dict:
+    @property
+    def judged(self) -> bool:
+        """A function is judged when mutants ran against a passing
+        baseline. Timed out outcomes still count as judged runs, and
+        they block a decorative verdict through the status rule."""
+        return self.baseline_ok and bool(self.outcomes)
+
+    @property
+    def status(self) -> str:
+        if self.baseline_timed_out:
+            return "inconclusive"
         if not self.baseline_ok:
-            status = "baseline_failed"
-        elif not self.outcomes:
-            status = "no_applicable_mutants"
-        elif self.decorative_candidate:
-            status = "decorative_candidate"
-        else:
-            status = "can_fail"
+            return "baseline_failed"
+        if not self.outcomes:
+            return "no_applicable_mutants"
+        if self.decorative_candidate:
+            return "decorative_candidate"
+        if any(item.killed for item in self.outcomes):
+            return "can_fail"
+        if any(item.timed_out for item in self.outcomes):
+            return "inconclusive"
+        return "can_fail"
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "status": self.status,
+            "mutants": [item.to_dict() for item in self.outcomes],
+            "surviving_mutants": [
+                item.to_dict() for item in self.survivors
+            ],
+        }
+
+
+def _aggregate_outcomes(
+    functions: list[FunctionVerdict],
+) -> list[MutantOutcome]:
+    """Fold per function outcomes into one outcome per mutant.
+
+    A mutant counts as killed at file level when at least one judged
+    function turned red under it. A mutant counts as timed out when
+    no function killed it and at least one run timed out.
+    """
+    order: list[tuple[str, str, int, str]] = []
+    grouped: dict[tuple[str, str, int, str], list[MutantOutcome]] = {}
+    for function in functions:
+        for outcome in function.outcomes:
+            mutant = outcome.mutant
+            key = (
+                outcome.source_path,
+                mutant.kind,
+                mutant.line,
+                mutant.detail,
+            )
+            if key not in grouped:
+                grouped[key] = []
+                order.append(key)
+            grouped[key].append(outcome)
+    aggregated: list[MutantOutcome] = []
+    for key in order:
+        items = grouped[key]
+        first = items[0]
+        killed = any(item.killed for item in items)
+        timed_out = not killed and any(
+            item.timed_out for item in items
+        )
+        aggregated.append(
+            MutantOutcome(
+                source_path=first.source_path,
+                mutant=first.mutant,
+                killed=killed,
+                timed_out=timed_out,
+            )
+        )
+    return aggregated
+
+
+@dataclass
+class FileVerdict:
+    """The verdict for one test file, rolled up from its functions."""
+
+    path: str
+    test_functions: list[str]
+    baseline_ok: bool
+    outcomes: list[MutantOutcome] = field(default_factory=list)
+    functions: list[FunctionVerdict] = field(default_factory=list)
+    whole_file: bool = False
+
+    @property
+    def survivors(self) -> list[MutantOutcome]:
+        return [
+            item
+            for item in self.outcomes
+            if not item.killed and not item.timed_out
+        ]
+
+    @property
+    def decorative_candidate(self) -> bool:
+        if self.functions and not self.whole_file:
+            return self.status == "decorative_candidate"
+        return (
+            self.baseline_ok
+            and bool(self.outcomes)
+            and all(
+                not item.killed and not item.timed_out
+                for item in self.outcomes
+            )
+        )
+
+    @property
+    def status(self) -> str:
+        if self.whole_file:
+            # Whole file judgement, the slice 1 behaviour, kept for
+            # files carrying class based tests, which per function
+            # verdicts do not select. This path serves those files
+            # and hand built verdicts in tests.
+            if not self.baseline_ok:
+                return "baseline_failed"
+            if not self.outcomes:
+                return "no_applicable_mutants"
+            if self.decorative_candidate:
+                return "decorative_candidate"
+            if any(item.killed for item in self.outcomes):
+                return "can_fail"
+            if any(item.timed_out for item in self.outcomes):
+                return "inconclusive"
+            return "can_fail"
+        if not self.functions and not self.outcomes:
+            return "no_applicable_mutants"
+        if self.functions:
+            judged = [
+                item for item in self.functions if item.judged
+            ]
+            has_baseline_failed = any(
+                item.status == "baseline_failed"
+                for item in self.functions
+            )
+            if judged and all(
+                item.status == "decorative_candidate" for item in judged
+            ) and not has_baseline_failed:
+                return "decorative_candidate"
+            if any(
+                item.status == "can_fail" for item in self.functions
+            ):
+                return "can_fail"
+            if has_baseline_failed:
+                return "baseline_failed"
+            if any(
+                item.status == "inconclusive"
+                for item in self.functions
+            ):
+                return "inconclusive"
+            return "no_applicable_mutants"
+        if not self.baseline_ok:
+            return "baseline_failed"
+        if not self.outcomes:
+            return "no_applicable_mutants"
+        if self.decorative_candidate:
+            return "decorative_candidate"
+        return "can_fail"
+
+    def to_dict(self) -> dict:
         return {
             "path": self.path,
             "test_functions": self.test_functions,
-            "status": status,
+            "status": self.status,
+            "functions": [
+                item.to_dict() for item in self.functions
+            ],
             "mutants": [item.to_dict() for item in self.outcomes],
             "surviving_mutants": [
                 item.to_dict() for item in self.survivors
@@ -89,6 +262,7 @@ class Analysis:
 
     def to_dict(self) -> dict:
         return {
+            "schema": "cantfail-report/2",
             "project": self.project,
             "static_findings": [
                 item.to_dict() for item in self.static_findings
@@ -140,9 +314,20 @@ def _copy_project(project: Path) -> Path:
     return target
 
 
-def _run_pytest(project_copy: Path, test_file: Path, timeout: float) -> str:
-    """Run one test file and return passed, failed, or timeout."""
+def _run_pytest(
+    project_copy: Path,
+    test_file: Path,
+    timeout: float,
+    function_name: str | None = None,
+) -> str:
+    """Run one test file or one test function in it.
+
+    Returns passed, failed, or timeout.
+    """
     relative = test_file.relative_to(project_copy)
+    target = str(relative)
+    if function_name is not None:
+        target = f"{relative}::{function_name}"
     try:
         result = subprocess.run(
             [
@@ -152,7 +337,7 @@ def _run_pytest(project_copy: Path, test_file: Path, timeout: float) -> str:
                 "-q",
                 "-p",
                 "no:cacheprovider",
-                str(relative),
+                target,
             ],
             cwd=project_copy,
             capture_output=True,
@@ -162,6 +347,59 @@ def _run_pytest(project_copy: Path, test_file: Path, timeout: float) -> str:
     except subprocess.TimeoutExpired:
         return "timeout"
     return "passed" if result.returncode == 0 else "failed"
+
+
+def _whole_file_outcomes(
+    project: Path,
+    test_file: Path,
+    sources: list[Path],
+    timeout: float,
+) -> tuple[bool, list[MutantOutcome]]:
+    """Judge one test file as a whole, the slice 1 behaviour.
+
+    Used for files carrying class based tests, which per function
+    verdicts do not select, so the file is never silently skipped.
+    """
+    relative_test = test_file.relative_to(project)
+    baseline_copy = _copy_project(project)
+    try:
+        baseline = _run_pytest(
+            baseline_copy, baseline_copy / relative_test, timeout
+        )
+    finally:
+        shutil.rmtree(baseline_copy.parent, ignore_errors=True)
+    if baseline != "passed":
+        return False, []
+    outcomes: list[MutantOutcome] = []
+    for source_file in _paired_sources(test_file, sources):
+        relative_source = source_file.relative_to(project)
+        for mutant in generate_mutants(
+            source_file.read_text(encoding="utf-8")
+        ):
+            mutant_copy = _copy_project(project)
+            try:
+                target = mutant_copy / relative_source
+                target.write_text(
+                    mutant.source + "\n", encoding="utf-8"
+                )
+                outcome = _run_pytest(
+                    mutant_copy,
+                    mutant_copy / relative_test,
+                    timeout,
+                )
+                outcomes.append(
+                    MutantOutcome(
+                        source_path=str(relative_source),
+                        mutant=mutant,
+                        killed=outcome == "failed",
+                        timed_out=outcome == "timeout",
+                    )
+                )
+            finally:
+                shutil.rmtree(
+                    mutant_copy.parent, ignore_errors=True
+                )
+    return True, outcomes
 
 
 def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
@@ -177,45 +415,95 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
     verdicts: list[FileVerdict] = []
     for test_file in test_files:
         relative_test = test_file.relative_to(project)
-        functions = test_function_names(
+        functions = top_level_test_functions(
             test_file.read_text(encoding="utf-8")
         )
+        function_verdicts: list[FunctionVerdict] = []
+
         baseline_copy = _copy_project(project)
         try:
-            baseline = _run_pytest(baseline_copy, baseline_copy / relative_test, timeout)
+            for name in functions:
+                baseline = _run_pytest(
+                    baseline_copy,
+                    baseline_copy / relative_test,
+                    timeout,
+                    function_name=name,
+                )
+                function_verdicts.append(
+                    FunctionVerdict(
+                        name=name,
+                        baseline_ok=baseline == "passed",
+                        baseline_timed_out=baseline == "timeout",
+                    )
+                )
         finally:
             shutil.rmtree(baseline_copy.parent, ignore_errors=True)
-        verdict = FileVerdict(
-            path=str(relative_test),
-            test_functions=functions,
-            baseline_ok=baseline == "passed",
-        )
-        verdicts.append(verdict)
-        if not verdict.baseline_ok:
-            continue
-        for source_file in _paired_sources(test_file, sources):
-            relative_source = source_file.relative_to(project)
-            mutants = generate_mutants(
-                source_file.read_text(encoding="utf-8")
-            )
-            for mutant in mutants:
+
+        judged = [
+            item for item in function_verdicts if item.baseline_ok
+        ]
+        if judged:
+            mutants: list[tuple[Path, Mutant]] = []
+            for source_file in _paired_sources(test_file, sources):
+                relative_source = source_file.relative_to(project)
+                for mutant in generate_mutants(
+                    source_file.read_text(encoding="utf-8")
+                ):
+                    mutants.append((relative_source, mutant))
+            for relative_source, mutant in mutants:
                 mutant_copy = _copy_project(project)
                 try:
                     target = mutant_copy / relative_source
-                    target.write_text(mutant.source + "\n", encoding="utf-8")
-                    outcome = _run_pytest(
-                        mutant_copy, mutant_copy / relative_test, timeout
+                    target.write_text(
+                        mutant.source + "\n", encoding="utf-8"
                     )
+                    for function in judged:
+                        outcome = _run_pytest(
+                            mutant_copy,
+                            mutant_copy / relative_test,
+                            timeout,
+                            function_name=function.name,
+                        )
+                        function.outcomes.append(
+                            MutantOutcome(
+                                source_path=str(relative_source),
+                                mutant=mutant,
+                                killed=outcome == "failed",
+                                timed_out=outcome == "timeout",
+                            )
+                        )
                 finally:
-                    shutil.rmtree(mutant_copy.parent, ignore_errors=True)
-                verdict.outcomes.append(
-                    MutantOutcome(
-                        source_path=str(relative_source),
-                        mutant=mutant,
-                        killed=outcome == "failed",
-                        timed_out=outcome == "timeout",
+                    shutil.rmtree(
+                        mutant_copy.parent, ignore_errors=True
                     )
+
+        if has_class_based_tests(
+            test_file.read_text(encoding="utf-8")
+        ):
+            whole_ok, whole_outcomes = _whole_file_outcomes(
+                project, test_file, sources, timeout
+            )
+            verdicts.append(
+                FileVerdict(
+                    path=str(relative_test),
+                    test_functions=functions,
+                    baseline_ok=whole_ok,
+                    outcomes=whole_outcomes,
+                    functions=function_verdicts,
+                    whole_file=True,
                 )
+            )
+            continue
+        verdict = FileVerdict(
+            path=str(relative_test),
+            test_functions=functions,
+            baseline_ok=any(
+                item.baseline_ok for item in function_verdicts
+            ),
+            outcomes=_aggregate_outcomes(function_verdicts),
+            functions=function_verdicts,
+        )
+        verdicts.append(verdict)
     return Analysis(
         project=project.name,
         static_findings=static_findings,

@@ -82,6 +82,49 @@ BASELINE_FAILING = {
 }
 
 
+MIXED = {
+    "ledger.py": (
+        "def double(x):\n"
+        "    return x * 2\n"
+    ),
+    "test_ledger.py": (
+        "from unittest.mock import Mock\n"
+        "\n"
+        "from ledger import double\n"
+        "\n"
+        "\n"
+        "def test_double():\n"
+        "    assert double(3) == 6\n"
+        "\n"
+        "\n"
+        "def test_fetch_returns_what_it_was_told():\n"
+        "    client = Mock()\n"
+        "    client.fetch.return_value = 42\n"
+        "    result = client.fetch()\n"
+        "    assert result == 42\n"
+    ),
+}
+
+
+BASELINE_MIXED = {
+    "counter.py": (
+        "def value():\n"
+        "    return 1\n"
+    ),
+    "test_counter.py": (
+        "from counter import value\n"
+        "\n"
+        "\n"
+        "def test_value_ok():\n"
+        "    assert value() == 1\n"
+        "\n"
+        "\n"
+        "def test_value_wrong():\n"
+        "    assert value() == 2\n"
+    ),
+}
+
+
 UNMATCHED_STEM = {
     "thing.py": (
         "def value():\n"
