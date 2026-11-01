@@ -305,3 +305,7 @@ The Round 10 red team returned CONDITIONAL with one Minor and the two axis revie
 The red team showed that obligation M3 enumerated the delegate name cases the reading refuses without naming assignment binding, the one supply boundary its enumeration left to guess. The supply is definitions only under the discipline of J2, so an assignment neither enters it nor clears a definition standing earlier under the same name, exactly as the helper and fixture readings have always read an assignment bound name, including the false flag the rebind shape draws in those older readings on the parent head. The assignment sentence now stands inside obligation M3.
 
 The standards axis found the slice 11 paragraph of the README carried some of the M3 refusals and not two headline limits, the attribute delegation and the pass through shape. The paragraph now names both, beside the refusals it already carried.
+
+## Setup completion, 2026-11-01
+
+AGENTS.md stands in this repo from today. The canonical template it copies verbatim above its marked line was authored once for the whole program by the Gate Truth Line owner chat, under David's direction on 2026-11-01 after the main chat never supplied one, and lives at the canonical path in the program's files, so every repo in the program carries the same canonical part and only the annex differs. The README status sentence that recorded AGENTS.md as pending is corrected in the same change.
