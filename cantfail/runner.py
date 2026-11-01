@@ -19,6 +19,11 @@ Slice 4 reads the collection naming settings of the analysed
 project under F1, so discovery and selection honour the names the
 project itself configured, and the analysis records any non
 default settings in force for the report disclosure of F5.
+
+Slice 5 passes those same settings to the static scan under G1,
+so a static finding is a claim about a test function as the
+project settings name test functions, and selection and verdicts
+are untouched by the scan change under G4.
 """
 
 from __future__ import annotations
@@ -467,7 +472,7 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
     static_findings: list[StaticFinding] = []
     for test_file in test_files:
         display = str(test_file.relative_to(project))
-        static_findings.extend(scan_file(test_file, display))
+        static_findings.extend(scan_file(test_file, display, settings))
 
     verdicts: list[FileVerdict] = []
     for test_file in test_files:

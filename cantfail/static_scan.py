@@ -7,6 +7,13 @@ was configured inside a helper or a fixture in the same file and
 bound to the test under another name. An assertion that compares
 an expression with itself. An assertion on the constant true
 value.
+
+Slice 5 gates every shape on the assertion sitting inside a test
+function, where what counts as a test function follows the
+python_functions setting of the analysed project under G2. The
+maps the scan builds stay file wide, because a helper is not a
+test function and is never required to be one for the test that
+binds its mock to be flagged.
 """
 
 from __future__ import annotations
@@ -157,7 +164,10 @@ def _d5_findings_in_function(
     name bound to a helper or fixture mock keeps that binding
     until the name is assigned something else, and only a call
     whose attribute chain matches a configured chain can be
-    flagged.
+    flagged. A nested function is visited exactly once, with a
+    copy of the enclosing bindings plus its own fixture arguments,
+    the way a closure reads the enclosing scope, so an assertion
+    inside it is reported once and never once per enclosing call.
     """
     findings: list[StaticFinding] = []
     env: dict[str, dict[str, str]] = {}
@@ -165,8 +175,19 @@ def _d5_findings_in_function(
         if arg.arg in fixtures:
             env[arg.arg] = fixtures[arg.arg]
 
-    def visit(statements: list[ast.stmt]) -> None:
+    def visit(
+        statements: list[ast.stmt], env: dict[str, dict[str, str]]
+    ) -> None:
         for statement in statements:
+            if isinstance(
+                statement, (ast.FunctionDef, ast.AsyncFunctionDef)
+            ):
+                child = dict(env)
+                for arg in statement.args.args + statement.args.kwonlyargs:
+                    if arg.arg in fixtures:
+                        child[arg.arg] = fixtures[arg.arg]
+                visit(statement.body, child)
+                continue
             if isinstance(statement, ast.Assign) and len(
                 statement.targets
             ) == 1 and isinstance(statement.targets[0], ast.Name):
@@ -185,9 +206,9 @@ def _d5_findings_in_function(
                 if finding is not None:
                     findings.append(finding)
             for nested in _statement_lists(statement):
-                visit(nested)
+                visit(nested, env)
 
-    visit(func.body)
+    visit(func.body, env)
     return findings
 
 
@@ -232,9 +253,69 @@ def _d5_assert_finding(
     return None
 
 
-def scan_source(source: str, path: str) -> list[StaticFinding]:
-    """Scan one test file source string and return its findings."""
+def _parent_map(tree: ast.Module) -> dict[ast.AST, ast.AST]:
+    """Map each node in a parsed file to its parent node."""
+    parents: dict[ast.AST, ast.AST] = {}
+    for node in ast.walk(tree):
+        for child in ast.iter_child_nodes(node):
+            parents[child] = node
+    return parents
+
+
+def _governing_function(
+    node: ast.AST, parents: dict[ast.AST, ast.AST]
+) -> ast.FunctionDef | ast.AsyncFunctionDef | None:
+    """Return the function definition a node belongs to for the
+    scan, under the rule of G2.
+
+    The governing definition is the one on the climb from the node
+    to the module that sits at module level or directly inside a
+    module level class. A definition nested any deeper belongs to
+    that governing definition, and a node outside every such
+    definition has none.
+    """
+    current: ast.AST | None = node
+    while current is not None:
+        if isinstance(
+            current, (ast.FunctionDef, ast.AsyncFunctionDef)
+        ):
+            parent = parents.get(current)
+            if isinstance(parent, ast.Module):
+                return current
+            if isinstance(parent, ast.ClassDef) and isinstance(
+                parents.get(parent), ast.Module
+            ):
+                return current
+        current = parents.get(current)
+    return None
+
+
+def scan_source(
+    source: str,
+    path: str,
+    settings: CollectionSettings | None = None,
+) -> list[StaticFinding]:
+    """Scan one test file source string and return its findings.
+
+    The settings argument carries the collection naming settings
+    of the analysed project under G1, the way the selector takes
+    them, and the defaults are in force when it is not given. A
+    finding is reported only for an assertion that sits inside a
+    test function under G2, decided by the python_functions
+    setting in force through the same matching rule the selector
+    applies to that setting.
+    """
+    if settings is None:
+        settings = DEFAULT_SETTINGS
     tree = ast.parse(source)
+    parents = _parent_map(tree)
+
+    def in_test_function(node: ast.AST) -> bool:
+        governing = _governing_function(node, parents)
+        return governing is not None and _function_name_matches(
+            governing.name, settings
+        )
+
     findings: list[StaticFinding] = []
 
     # Map of root mock name to the source text of its assigned
@@ -258,6 +339,8 @@ def scan_source(source: str, path: str) -> list[StaticFinding]:
 
     for node in ast.walk(tree):
         if not isinstance(node, ast.Assert):
+            continue
+        if not in_test_function(node):
             continue
         test = node.test
         if isinstance(test, ast.Constant) and test.value is True:
@@ -343,7 +426,11 @@ def scan_source(source: str, path: str) -> list[StaticFinding]:
                     )
                     break
     for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        if (
+            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and _governing_function(node, parents) is node
+            and in_test_function(node)
+        ):
             findings.extend(
                 _d5_findings_in_function(node, helpers, fixtures, path)
             )
@@ -351,13 +438,25 @@ def scan_source(source: str, path: str) -> list[StaticFinding]:
     return findings
 
 
-def scan_file(path: Path, display_path: str) -> list[StaticFinding]:
-    """Scan one test file on disk."""
-    return scan_source(path.read_text(encoding="utf-8"), display_path)
+def scan_file(
+    path: Path,
+    display_path: str,
+    settings: CollectionSettings | None = None,
+) -> list[StaticFinding]:
+    """Scan one test file on disk, under the settings of G1."""
+    return scan_source(
+        path.read_text(encoding="utf-8"), display_path, settings
+    )
 
 
 def test_function_names(source: str) -> list[str]:
-    """Return the names of test functions defined in a source string."""
+    """Return the names of test functions defined in a source string.
+
+    Legacy helper kept for its original callers. It reads the bare
+    test prefix and does not follow the collection naming settings
+    the scan and the selector have honoured since slice 4, and it
+    is not used on the analysis path.
+    """
     tree = ast.parse(source)
     names = []
     for node in ast.walk(tree):
@@ -374,6 +473,11 @@ def top_level_test_functions(source: str) -> list[str]:
     inside classes are not selected on their own by this helper,
     and a name defined twice is returned once, under the single
     name pytest can run.
+
+    Legacy helper kept for its original callers. It reads the bare
+    test prefix and does not follow the collection naming settings
+    the scan and the selector have honoured since slice 4, and it
+    is not used on the analysis path.
     """
     tree = ast.parse(source)
     names: list[str] = []
