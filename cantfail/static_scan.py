@@ -160,14 +160,23 @@ def _attribute_chain(node: ast.AST) -> tuple[str, str] | None:
 
 def _configured_chains(
     func: ast.FunctionDef | ast.AsyncFunctionDef,
+    before: tuple[int, int] | None = None,
 ) -> dict[tuple[str, str], set[str]]:
     """Map each configured call, named by root and attribute
     chain, to the distinct literals its return value was assigned
     inside one function. svc.fetch.return_value = 42 lands under
-    the pair svc and fetch."""
+    the pair svc and fetch. When before is given as a line and
+    column pair, only assignments standing before that position
+    count, which is how the setup part of a yield fixture is read
+    apart from its teardown under L1."""
     configured: dict[tuple[str, str], set[str]] = {}
     for node in ast.walk(func):
         if isinstance(node, ast.Assign) and len(node.targets) == 1:
+            if before is not None and (
+                node.lineno,
+                node.col_offset,
+            ) >= before:
+                continue
             target = node.targets[0]
             if _is_return_value(target):
                 split = _attribute_chain(target.value)
@@ -190,6 +199,39 @@ def _returned_names(
     return names
 
 
+def _own_yields(
+    func: ast.FunctionDef | ast.AsyncFunctionDef,
+) -> list[ast.Yield]:
+    """The yield expressions that belong to a definition itself,
+    in source order. A yield inside a definition nested in the
+    fixture belongs to the nested definition and makes that
+    definition a generator rather than the fixture, so the walk
+    never crosses into a nested definition, class, or lambda.
+    Under L1 the first of these yields is the provision of a
+    yield fixture and everything after it is teardown side."""
+    found: list[ast.Yield] = []
+
+    def visit(node: ast.AST) -> None:
+        for child in ast.iter_child_nodes(node):
+            if isinstance(
+                child,
+                (
+                    ast.FunctionDef,
+                    ast.AsyncFunctionDef,
+                    ast.ClassDef,
+                    ast.Lambda,
+                ),
+            ):
+                continue
+            if isinstance(child, ast.Yield):
+                found.append(child)
+            visit(child)
+
+    visit(func)
+    found.sort(key=lambda item: (item.lineno, item.col_offset))
+    return found
+
+
 def _helper_and_fixture_maps(
     tree: ast.Module,
 ) -> tuple[dict[str, dict[str, str]], dict[str, dict[str, str]]]:
@@ -204,15 +246,40 @@ def _helper_and_fixture_maps(
     last definition decides what the name supplies to either map,
     under FIX-25 for the fixture entry and J2 for the helper
     entry.
+
+    A fixture definition that yields is read from its setup part
+    under L1 instead. The configured chains are the assignments
+    standing before the first yield of the definition and the
+    provided name is the name that yield yields, so teardown
+    assignments configure nothing and a later yield provides
+    nothing further. An async fixture definition stands outside
+    the yield reading under L4 and keeps the return reading.
     """
     helpers: dict[str, dict[str, str]] = {}
     fixtures: dict[str, dict[str, str]] = {}
     for node in _bound_definitions(tree.body).values():
-        configured = _configured_chains(node)
-        returned = set(_returned_names(node))
+        yields = (
+            _own_yields(node)
+            if isinstance(node, ast.FunctionDef)
+            and _is_fixture_definition(node)
+            else []
+        )
+        if yields:
+            first = yields[0]
+            configured = _configured_chains(
+                node, before=(first.lineno, first.col_offset)
+            )
+            provided = (
+                {first.value.id}
+                if isinstance(first.value, ast.Name)
+                else set()
+            )
+        else:
+            configured = _configured_chains(node)
+            provided = set(_returned_names(node))
         table: dict[str, str] = {}
         for (root, chain), values in configured.items():
-            if root in returned and len(values) == 1:
+            if root in provided and len(values) == 1:
                 table[chain] = next(iter(values))
         if not table:
             continue
