@@ -98,6 +98,12 @@ def to_text(analysis: Analysis) -> str:
     lines.append("cantfail report")
     lines.append(f"project - {analysis.project}")
     lines.append("schema - cantfail-report/3")
+    if analysis.collection_settings:
+        parts = ", ".join(
+            f"{key} {' '.join(patterns)}"
+            for key, patterns in analysis.collection_settings.items()
+        )
+        lines.append(f"collection settings - {parts}")
     lines.append("")
     lines.append("static findings")
     if not analysis.static_findings:

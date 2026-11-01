@@ -14,6 +14,11 @@ class is judged on its own beside the top level functions, selected
 by its class and method node, and the rollup treats it exactly like
 a function. A test file with no selectable items at all falls back
 to the whole file judgement, so no file is silently skipped.
+
+Slice 4 reads the collection naming settings of the analysed
+project under F1, so discovery and selection honour the names the
+project itself configured, and the analysis records any non
+default settings in force for the report disclosure of F5.
 """
 
 from __future__ import annotations
@@ -26,6 +31,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .mutations import Mutant, generate_mutants
+from .settings import (
+    CollectionSettings,
+    file_matches,
+    load_collection_settings,
+)
 from .static_scan import (
     StaticFinding,
     has_unselected_test_shapes,
@@ -272,9 +282,10 @@ class Analysis:
     project: str
     static_findings: list[StaticFinding]
     verdicts: list[FileVerdict]
+    collection_settings: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
-        return {
+        data = {
             "schema": "cantfail-report/3",
             "project": self.project,
             "static_findings": [
@@ -282,23 +293,44 @@ class Analysis:
             ],
             "verdicts": [item.to_dict() for item in self.verdicts],
         }
+        if self.collection_settings:
+            data["collection_settings"] = self.collection_settings
+        return data
 
 
-def _is_test_file(path: Path) -> bool:
+def _is_test_file(
+    path: Path,
+    settings: CollectionSettings | None = None,
+    project: Path | None = None,
+) -> bool:
+    if settings is not None and settings.python_files is not None:
+        relative = (
+            path.relative_to(project).as_posix()
+            if project is not None
+            else path.name
+        )
+        return file_matches(relative, path.name, settings.python_files)
     return path.name.startswith("test_") or path.name.endswith("_test.py")
 
 
-def _discover(project: Path) -> tuple[list[Path], list[Path]]:
+def _discover(
+    project: Path, settings: CollectionSettings | None = None
+) -> tuple[list[Path], list[Path]]:
     tests: list[Path] = []
     sources: list[Path] = []
     for path in sorted(project.rglob("*.py")):
         if any(part.startswith(".") for part in path.parts):
             continue
-        if _is_test_file(path) or path.name == "conftest.py":
+        if (
+            _is_test_file(path, settings, project)
+            or path.name == "conftest.py"
+        ):
             tests.append(path)
         else:
             sources.append(path)
-    test_files = [path for path in tests if _is_test_file(path)]
+    test_files = [
+        path for path in tests if _is_test_file(path, settings, project)
+    ]
     return test_files, sources
 
 
@@ -429,7 +461,8 @@ def _whole_file_outcomes(
 def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
     """Analyse one project directory and return the full analysis."""
     project = project.resolve()
-    test_files, sources = _discover(project)
+    settings = load_collection_settings(project)
+    test_files, sources = _discover(project, settings)
 
     static_findings: list[StaticFinding] = []
     for test_file in test_files:
@@ -440,7 +473,7 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
     for test_file in test_files:
         relative_test = test_file.relative_to(project)
         source_text = test_file.read_text(encoding="utf-8")
-        items = selectable_test_items(source_text)
+        items = selectable_test_items(source_text, settings)
         if not items:
             whole_ok, whole_outcomes, no_tests = _whole_file_outcomes(
                 project, test_file, sources, timeout
@@ -525,7 +558,7 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
             outcomes=_aggregate_outcomes(function_verdicts),
             functions=function_verdicts,
             partial_selection=has_unselected_test_shapes(
-                source_text, items
+                source_text, items, settings
             ),
         )
         verdicts.append(verdict)
@@ -533,4 +566,5 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
         project=project.name,
         static_findings=static_findings,
         verdicts=verdicts,
+        collection_settings=settings.non_defaults(),
     )
