@@ -21,6 +21,13 @@ scan and never a selectable item for the selector, under the one
 reading of the fixture spellings in this module, with the carve
 outs H3 states for TestCase classes and fixture decorated
 classes on the verdict path.
+
+Slice 8 retires the duplicate name limit FIX-24 recorded. The
+fixture condition of the scan gate is read on the effective
+definition of a governing definition name, the last definition
+of that name in the body that holds it, and the helper and
+fixture maps clear both of their entries on a redefinition, so
+the last definition alone decides what a name supplies.
 """
 
 from __future__ import annotations
@@ -183,13 +190,17 @@ def _helper_and_fixture_maps(
     the one literal configured for that call. A chain configured
     with two distinct literals inside one helper is ambiguous and
     that chain alone is left out. Other chains on the same mock
-    still count.
+    still count. A name defined again clears both entries before
+    the later definition is read, so the last definition alone
+    decides what the name supplies to either map, under FIX-25
+    for the fixture entry and J2 for the helper entry.
     """
     helpers: dict[str, dict[str, str]] = {}
     fixtures: dict[str, dict[str, str]] = {}
     for node in tree.body:
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
+        helpers.pop(node.name, None)
         fixtures.pop(node.name, None)
         configured = _configured_chains(node)
         returned = set(_returned_names(node))
@@ -353,6 +364,20 @@ def _governing_function(
     return None
 
 
+def _bound_definitions(
+    statements: list[ast.stmt],
+) -> dict[str, ast.FunctionDef | ast.AsyncFunctionDef]:
+    """Map each function name defined in one statement list to the
+    definition the list binds for it. The last definition of a
+    name in the list wins, which is the effective reading FIX-22
+    gives the shaped count and J1 gives the scan gate."""
+    bound: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
+    for node in statements:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            bound[node.name] = node
+    return bound
+
+
 def scan_source(
     source: str,
     path: str,
@@ -366,20 +391,41 @@ def scan_source(
     finding is reported only for an assertion that sits inside a
     test function under G2, decided by the python_functions
     setting in force through the same matching rule the selector
-    applies to that setting.
+    applies to that setting. The fixture condition of that gate
+    is read on the effective definition of the governing
+    definition name under J1, so a name the body rebinds to a
+    fixture withholds the findings of every definition of the
+    name, and a name whose last definition is plain gives them.
     """
     if settings is None:
         settings = DEFAULT_SETTINGS
     tree = ast.parse(source)
     parents = _parent_map(tree)
+    module_definitions = _bound_definitions(tree.body)
+    class_definitions = {
+        id(node): _bound_definitions(node.body)
+        for node in tree.body
+        if isinstance(node, ast.ClassDef)
+    }
 
     def in_test_function(node: ast.AST) -> bool:
         governing = _governing_function(node, parents)
-        return (
-            governing is not None
-            and _function_name_matches(governing.name, settings)
-            and not _is_fixture_definition(governing)
-        )
+        if governing is None:
+            return False
+        if not _function_name_matches(governing.name, settings):
+            return False
+        parent = parents.get(governing)
+        if isinstance(parent, ast.Module):
+            effective = module_definitions.get(
+                governing.name, governing
+            )
+        elif isinstance(parent, ast.ClassDef):
+            effective = class_definitions.get(id(parent), {}).get(
+                governing.name, governing
+            )
+        else:
+            effective = governing
+        return not _is_fixture_definition(effective)
 
     findings: list[StaticFinding] = []
 
