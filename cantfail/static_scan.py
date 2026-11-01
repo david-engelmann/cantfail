@@ -232,6 +232,155 @@ def _own_yields(
     return found
 
 
+def _own_yield_froms(
+    func: ast.FunctionDef | ast.AsyncFunctionDef,
+) -> list[ast.YieldFrom]:
+    """The yield from expressions that belong to a definition
+    itself, in source order. The walk never crosses into a
+    nested definition, class, or lambda, the same boundary
+    _own_yields draws, because a delegation inside a nested
+    definition is a provision of that definition and not of
+    the fixture that holds it."""
+    found: list[ast.YieldFrom] = []
+
+    def visit(node: ast.AST) -> None:
+        for child in ast.iter_child_nodes(node):
+            if isinstance(
+                child,
+                (
+                    ast.FunctionDef,
+                    ast.AsyncFunctionDef,
+                    ast.ClassDef,
+                    ast.Lambda,
+                ),
+            ):
+                continue
+            if isinstance(child, ast.YieldFrom):
+                found.append(child)
+            visit(child)
+
+    visit(func)
+    found.sort(key=lambda item: (item.lineno, item.col_offset))
+    return found
+
+
+def _first_provision(
+    func: ast.FunctionDef | ast.AsyncFunctionDef,
+) -> ast.Yield | ast.YieldFrom | None:
+    """The first provision point of a definition, or None.
+
+    The provision points of a definition are its own yields
+    and its own delegations together in source order, under
+    M1. The first of them is the provision a test receives,
+    and every later one provides nothing further under the
+    rule L2 states for yields and M1 extends to delegations.
+    """
+    points: list[ast.Yield | ast.YieldFrom] = []
+    points.extend(_own_yields(func))
+    points.extend(_own_yield_froms(func))
+    if not points:
+        return None
+    return min(
+        points, key=lambda item: (item.lineno, item.col_offset)
+    )
+
+
+def _setup_table(
+    func: ast.FunctionDef | ast.AsyncFunctionDef,
+    first_yield: ast.Yield,
+) -> dict[str, str]:
+    """The configured table one definition provides at a yield.
+
+    The configured chains are the assignments standing before
+    the yield, and the table holds the chains whose root is
+    the name the yield yields, under the unambiguity rule the
+    fixture form of D5 has always used, so a chain configured
+    with two distinct literals in the setup part is left out
+    alone. This is the reading L1 gives a fixture that yields
+    and M2 gives the delegate of a fixture that delegates.
+    """
+    configured = _configured_chains(
+        func, before=(first_yield.lineno, first_yield.col_offset)
+    )
+    provided = (
+        {first_yield.value.id}
+        if isinstance(first_yield.value, ast.Name)
+        else set()
+    )
+    table: dict[str, str] = {}
+    for (root, chain), values in configured.items():
+        if root in provided and len(values) == 1:
+            table[chain] = next(iter(values))
+    return table
+
+
+def _delegation_name(node: ast.YieldFrom) -> str | None:
+    """The delegate name a yield from expression calls, or None.
+
+    A delegation is read under M1 when the expression it
+    delegates to is a call whose function is a bare name. A
+    delegation of any other shape, a bare name with no call or
+    a call reached through an attribute, names no delegate
+    this reading follows.
+    """
+    value = node.value
+    if isinstance(value, ast.Call) and isinstance(
+        value.func, ast.Name
+    ):
+        return value.func.id
+    return None
+
+
+def _follow_delegation(
+    node: ast.FunctionDef | ast.AsyncFunctionDef,
+    definitions: dict[
+        str, ast.FunctionDef | ast.AsyncFunctionDef
+    ],
+    seen: frozenset[str],
+) -> dict[str, str] | None:
+    """The table a definition draws through its delegation.
+
+    The caller guarantees the first provision point of node
+    is a delegation. The delegate is the effective definition
+    of the delegated name in the same module, and it is read
+    by its own first provision point, so a delegate that
+    yields is read from its setup part under M2 and a
+    delegate that itself delegates is followed to the next
+    link. None is returned when the chain cannot be followed
+    to a provision this reading covers, under the refusals
+    M3 states. A delegate carrying a fixture decorator is
+    refused, because a delegating body calling it is refused
+    by pytest for calling a fixture directly. An async
+    delegate is refused, because the object it hands the
+    delegation is not iterable. A delegate name the module
+    does not define is refused, and a name already standing
+    in the chain is refused, because a delegation cycle
+    never finishes setting up and the reading refuses
+    rather than following the chain forever.
+    """
+    first = _first_provision(node)
+    if not isinstance(first, ast.YieldFrom):
+        return None
+    name = _delegation_name(first)
+    if name is None or name in seen:
+        return None
+    target = definitions.get(name)
+    if (
+        target is None
+        or not isinstance(target, ast.FunctionDef)
+        or _is_fixture_definition(target)
+    ):
+        return None
+    target_first = _first_provision(target)
+    if target_first is None:
+        return None
+    if isinstance(target_first, ast.Yield):
+        return _setup_table(target, target_first)
+    return _follow_delegation(
+        target, definitions, seen | {name}
+    )
+
+
 def _helper_and_fixture_maps(
     tree: ast.Module,
 ) -> tuple[dict[str, dict[str, str]], dict[str, dict[str, str]]]:
@@ -254,33 +403,46 @@ def _helper_and_fixture_maps(
     assignments configure nothing and a later yield provides
     nothing further. An async fixture definition stands outside
     the yield reading under L4 and keeps the return reading.
+
+    A fixture definition whose first provision point is a
+    delegation is read through its delegate under M1 instead.
+    The delegate is the effective definition of the delegated
+    name in this same module, followed link by link under
+    _follow_delegation, and the table is formed from the setup
+    part of the delegate that finally yields. A delegation
+    this reading does not follow places no table, and the
+    return reading does not apply to a definition whose first
+    provision point is a delegation, because a return standing
+    in a generator body provides nothing a test receives.
     """
     helpers: dict[str, dict[str, str]] = {}
     fixtures: dict[str, dict[str, str]] = {}
-    for node in _bound_definitions(tree.body).values():
-        yields = (
-            _own_yields(node)
-            if isinstance(node, ast.FunctionDef)
-            and _is_fixture_definition(node)
-            else []
-        )
-        if yields:
-            first = yields[0]
-            configured = _configured_chains(
-                node, before=(first.lineno, first.col_offset)
-            )
-            provided = (
-                {first.value.id}
-                if isinstance(first.value, ast.Name)
-                else set()
-            )
-        else:
+    definitions = _bound_definitions(tree.body)
+    for node in definitions.values():
+        table: dict[str, str] | None = None
+        if isinstance(node, ast.FunctionDef) and (
+            _is_fixture_definition(node)
+        ):
+            first = _first_provision(node)
+            if first is not None:
+                if isinstance(first, ast.Yield):
+                    table = _setup_table(node, first)
+                else:
+                    followed = _follow_delegation(
+                        node,
+                        definitions,
+                        frozenset({node.name}),
+                    )
+                    table = (
+                        followed if followed is not None else {}
+                    )
+        if table is None:
             configured = _configured_chains(node)
             provided = set(_returned_names(node))
-        table: dict[str, str] = {}
-        for (root, chain), values in configured.items():
-            if root in provided and len(values) == 1:
-                table[chain] = next(iter(values))
+            table = {}
+            for (root, chain), values in configured.items():
+                if root in provided and len(values) == 1:
+                    table[chain] = next(iter(values))
         if not table:
             continue
         helpers[node.name] = table
