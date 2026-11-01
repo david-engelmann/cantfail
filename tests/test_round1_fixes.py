@@ -97,12 +97,15 @@ CLASS_ONLY = {
 }
 
 
-def test_class_only_file_is_judged_at_whole_file_level(tmp_path):
+def test_class_only_file_is_judged_per_method(tmp_path):
     project = write_project(tmp_path / "clsonly", CLASS_ONLY)
     analysis = analyse_project(project, timeout=60)
     verdict = analysis.verdicts[0]
-    assert verdict.whole_file is True
+    assert verdict.whole_file is False
     assert verdict.status == "can_fail"
+    assert [
+        (item.name, item.status) for item in verdict.functions
+    ] == [("TestAddOne::test_adds", "can_fail")]
     assert verdict.outcomes
 
 
@@ -135,12 +138,22 @@ CLASS_AND_TOP = {
 }
 
 
-def test_class_tests_stop_a_decorative_headline(tmp_path):
+def test_class_method_verdicts_stop_a_decorative_headline(
+    tmp_path,
+):
     project = write_project(tmp_path / "clsandtop", CLASS_AND_TOP)
     analysis = analyse_project(project, timeout=60)
     verdict = analysis.verdicts[0]
-    assert verdict.whole_file is True
+    assert verdict.whole_file is False
     assert verdict.status == "can_fail"
+    by_name = {
+        item.name: item.status for item in verdict.functions
+    }
+    assert by_name["TestAddOne::test_adds"] == "can_fail"
+    assert (
+        by_name["test_fetch_returns_what_it_was_told"]
+        == "decorative_candidate"
+    )
 
 
 def test_d5_other_method_on_the_same_mock_is_not_flagged():

@@ -1,6 +1,6 @@
 {
   "project": "demo_project",
-  "schema": "cantfail-report/2",
+  "schema": "cantfail-report/3",
   "static_findings": [
     {
       "detail": "assertion checks a value read from a mock against the return value the mock was assigned, 42",
@@ -417,6 +417,8 @@
           "source": "calc.py"
         }
       ],
+      "no_tests": false,
+      "partial_selection": false,
       "path": "test_calc.py",
       "status": "can_fail",
       "surviving_mutants": [],
@@ -424,7 +426,8 @@
         "test_add_one",
         "test_is_adult_boundary",
         "test_enabled"
-      ]
+      ],
+      "whole_file": false
     },
     {
       "functions": [
@@ -460,6 +463,8 @@
           "source": "greeter.py"
         }
       ],
+      "no_tests": false,
+      "partial_selection": false,
       "path": "test_greeter.py",
       "status": "decorative_candidate",
       "surviving_mutants": [
@@ -473,7 +478,8 @@
       ],
       "test_functions": [
         "test_fetch_returns_what_it_was_told"
-      ]
+      ],
+      "whole_file": false
     }
   ]
 }

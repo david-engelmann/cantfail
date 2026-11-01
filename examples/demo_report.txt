@@ -1,6 +1,6 @@
 cantfail report
 project - demo_project
-schema - cantfail-report/2
+schema - cantfail-report/3
 
 static findings
 test_greeter.py line 8 - mock_return_value - assertion checks a value read from a mock against the return value the mock was assigned, 42

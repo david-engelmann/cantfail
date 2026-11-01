@@ -59,6 +59,17 @@ def _verdict_lines(verdict: FileVerdict) -> list[str]:
     lines.append(f"{verdict.path} - {verdict.status}")
     for function in verdict.functions:
         lines.extend(_function_lines(function))
+    if verdict.partial_selection:
+        lines.append(
+            "  this file holds test shaped definitions the "
+            "selector does not name, and the verdict covers the "
+            "named items only"
+        )
+    if verdict.no_tests:
+        lines.append(
+            "  this file holds no test pytest could collect, so "
+            "no mutant in the panel has a test to be judged by"
+        )
     if verdict.status == "baseline_failed":
         lines.append(
             "  the unmutated run already fails so this file "
@@ -86,7 +97,7 @@ def to_text(analysis: Analysis) -> str:
     lines: list[str] = []
     lines.append("cantfail report")
     lines.append(f"project - {analysis.project}")
-    lines.append("schema - cantfail-report/2")
+    lines.append("schema - cantfail-report/3")
     lines.append("")
     lines.append("static findings")
     if not analysis.static_findings:
