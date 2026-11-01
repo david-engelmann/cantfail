@@ -15,6 +15,12 @@ import ast
 from dataclasses import dataclass
 from pathlib import Path
 
+from .settings import (
+    DEFAULT_SETTINGS,
+    CollectionSettings,
+    name_matches,
+)
+
 
 @dataclass(frozen=True)
 class StaticFinding:
@@ -456,36 +462,52 @@ def _defines_init(node):
     )
 
 
-def _class_yields_methods(node, classes, bindings):
+def _function_name_matches(name, settings):
+    """Return True when a function or method name is an item name
+    under the python_functions setting in force, or under the
+    default test prefix when no such setting is in force."""
+    if settings.python_functions is None:
+        return name.startswith("test")
+    return name_matches(name, settings.python_functions)
+
+
+def _class_yields_methods(node, classes, bindings, settings):
     """Return True when the selector names methods of this class.
 
-    Two concrete rules, matching what pytest collects by default. A
-    class whose name starts with Test yields its methods, unless it
-    defines an init of its own, which makes pytest refuse it. A
-    class that resolves to a unittest TestCase yields its methods
-    under any name. A class that sets __test__ to False yields
+    The rules match what pytest collects, under the settings in
+    force. A class that resolves to a unittest TestCase yields its
+    methods under any name. A name based class yields its methods
+    unless it defines an init of its own, which makes pytest
+    refuse it. The name rule is the python_classes setting in
+    force when one is set, with its patterns replacing the Test
+    prefix entirely, and the Test prefix itself when no setting
+    is in force. A class that sets __test__ to False yields
     nothing, whatever its name or bases.
     """
     if _sets_test_false(node):
         return False
     if _is_testcase_class(node, classes, bindings, frozenset()):
         return True
-    if node.name.startswith("Test"):
-        return not _defines_init(node)
-    return False
+    if _defines_init(node):
+        return False
+    if settings.python_classes is not None:
+        return name_matches(node.name, settings.python_classes)
+    return node.name.startswith("Test")
 
 
-def _test_method_names(node, classes, seen):
+def _test_method_names(node, classes, seen, settings):
     """Test method names of a class, its own first, then inherited.
 
-    Inherited names come from local base classes in base order,
-    skipping any name the class or an earlier base already gave.
+    A name counts as a test method name under the matching rule of
+    _function_name_matches. Inherited names come from local base
+    classes in base order, skipping any name the class or an
+    earlier base already gave.
     """
     names = []
     for member in node.body:
         if (
             isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))
-            and member.name.startswith("test")
+            and _function_name_matches(member.name, settings)
             and member.name not in names
         ):
             names.append(member.name)
@@ -496,18 +518,22 @@ def _test_method_names(node, classes, seen):
         if isinstance(base, ast.Name):
             local = classes.get(base.id)
             if local is not None:
-                for name in _test_method_names(local, classes, seen):
+                for name in _test_method_names(
+                    local, classes, seen, settings
+                ):
                     if name not in names:
                         names.append(name)
     return names
 
 
-def selectable_test_items(source: str) -> list[str]:
+def selectable_test_items(
+    source: str, settings: CollectionSettings | None = None
+) -> list[str]:
     """Return the selectable test items of a file in source order.
 
     An item is the selector pytest uses below the file. A top level
     test function is named by its own name. A test method inside a
-    class the default collection rules would collect is named by
+    class the collection rules in force would collect is named by
     its class and its method joined the way a pytest node joins
     them, and methods inherited from a local base class are named
     under the class pytest collects them on. Each selector appears
@@ -516,8 +542,12 @@ def selectable_test_items(source: str) -> list[str]:
     name in two classes names two different items. A class name
     defined twice binds its last definition, exactly as the module
     does, and only that definition yields items. Classes nested
-    inside other classes are not selected.
+    inside other classes are not selected. The settings argument
+    carries the collection naming settings of F1 to F3, and the
+    defaults are in force when it is not given.
     """
+    if settings is None:
+        settings = DEFAULT_SETTINGS
     tree = ast.parse(source)
     bindings = _unittest_bindings(tree)
     classes = {}
@@ -528,37 +558,59 @@ def selectable_test_items(source: str) -> list[str]:
     for node in tree.body:
         if isinstance(
             node, (ast.FunctionDef, ast.AsyncFunctionDef)
-        ) and node.name.startswith("test"):
+        ) and _function_name_matches(node.name, settings):
             if node.name not in items:
                 items.append(node.name)
         elif (
             isinstance(node, ast.ClassDef)
             and classes.get(node.name) is node
-            and _class_yields_methods(node, classes, bindings)
+            and _class_yields_methods(node, classes, bindings, settings)
         ):
-            for name in _test_method_names(node, classes, frozenset()):
+            for name in _test_method_names(
+                node, classes, frozenset(), settings
+            ):
                 selector = f"{node.name}::{name}"
                 if selector not in items:
                     items.append(selector)
     return items
 
 
-def has_unselected_test_shapes(source: str, items: list[str]) -> bool:
+def _shaped_name(name, settings):
+    """Return True when a definition name reads as test shaped for
+    the disclosure of FIX-12. A name is test shaped under the
+    python_functions setting in force when one is set, its
+    patterns replacing the test prefix entirely, and under the
+    test prefix when no setting is in force, so a name the
+    project's own settings have deselected never reads as an
+    unjudged test shape."""
+    if settings.python_functions is not None:
+        return name_matches(name, settings.python_functions)
+    return name.startswith("test")
+
+
+def has_unselected_test_shapes(
+    source: str,
+    items: list[str],
+    settings: CollectionSettings | None = None,
+) -> bool:
     """Return True when a file holds test shaped definitions that
     the selector did not name, beside at least one named item.
 
     Test shaped means a top level function or a method in any class
-    in the file, nested classes included, whose name starts with
-    test. The count compares distinct runnable names, so inherited
-    methods named under a subclass do not read as unselected.
+    in the file, nested classes included, whose name is test shaped
+    under _shaped_name. The count compares distinct runnable
+    names, so inherited methods named under a subclass do not read
+    as unselected.
     """
+    if settings is None:
+        settings = DEFAULT_SETTINGS
     tree = ast.parse(source)
     shaped = 0
     top_level = set()
     for node in tree.body:
         if isinstance(
             node, (ast.FunctionDef, ast.AsyncFunctionDef)
-        ) and node.name.startswith("test"):
+        ) and _shaped_name(node.name, settings):
             top_level.add(node.name)
     shaped += len(top_level)
     for node in ast.walk(tree):
@@ -569,7 +621,7 @@ def has_unselected_test_shapes(source: str, items: list[str]) -> bool:
                 if isinstance(
                     member, (ast.FunctionDef, ast.AsyncFunctionDef)
                 )
-                and member.name.startswith("test")
+                and _shaped_name(member.name, settings)
             }
             shaped += len(methods)
     return shaped > len(items)
