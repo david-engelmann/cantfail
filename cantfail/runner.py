@@ -32,6 +32,16 @@ carve outs H3 states for TestCase methods and fixture decorated
 classes, and a file left with fixtures alone falls to the whole
 file judgement and reads as a file with no tests when its run
 collects nothing.
+
+Slice 7 walks the settings search upward from the project
+folder under I1, so a governing source in a parent folder names
+the items of the project below it. When the governing folder is
+not the project folder, every scratch copy carries the
+governing source file one level above the copied project under
+I3, so the run inside the copy decides on the same source the
+selector read, and the analysis records where the governing
+source was found for the disclosure of I4 beside any non
+default settings in force.
 """
 
 from __future__ import annotations
@@ -47,7 +57,7 @@ from .mutations import Mutant, generate_mutants
 from .settings import (
     CollectionSettings,
     file_matches,
-    load_collection_settings,
+    load_collection_settings_with_source,
 )
 from .static_scan import (
     StaticFinding,
@@ -296,6 +306,7 @@ class Analysis:
     static_findings: list[StaticFinding]
     verdicts: list[FileVerdict]
     collection_settings: dict = field(default_factory=dict)
+    settings_source: str | None = None
 
     def to_dict(self) -> dict:
         data = {
@@ -308,6 +319,10 @@ class Analysis:
         }
         if self.collection_settings:
             data["collection_settings"] = self.collection_settings
+            if self.settings_source is not None:
+                data["collection_settings_source"] = (
+                    self.settings_source
+                )
         return data
 
 
@@ -359,7 +374,9 @@ def _paired_sources(test_file: Path, sources: list[Path]) -> list[Path]:
     return matched if matched else list(sources)
 
 
-def _copy_project(project: Path) -> Path:
+def _copy_project(
+    project: Path, governing_file: Path | None = None
+) -> Path:
     scratch = Path(tempfile.mkdtemp(prefix="cantfail-"))
     target = scratch / "project"
     shutil.copytree(
@@ -369,6 +386,15 @@ def _copy_project(project: Path) -> Path:
             "__pycache__", ".git", ".pytest_cache", "*.pyc"
         ),
     )
+    if governing_file is not None:
+        # The governing source lives above the analysed project,
+        # so the upward search pytest makes inside the copy would
+        # never reach the real one. Carrying the file one level
+        # above the copied project, under I3, puts the same
+        # source on the walk the run makes inside the copy.
+        shutil.copyfile(
+            governing_file, scratch / governing_file.name
+        )
     return target
 
 
@@ -419,6 +445,7 @@ def _whole_file_outcomes(
     test_file: Path,
     sources: list[Path],
     timeout: float,
+    governing_file: Path | None = None,
 ) -> tuple[bool, list[MutantOutcome], bool]:
     """Judge one test file as a whole, the slice 1 behaviour.
 
@@ -428,7 +455,7 @@ def _whole_file_outcomes(
     which is a file with no tests in it rather than a failing one.
     """
     relative_test = test_file.relative_to(project)
-    baseline_copy = _copy_project(project)
+    baseline_copy = _copy_project(project, governing_file)
     try:
         baseline = _run_pytest(
             baseline_copy, baseline_copy / relative_test, timeout
@@ -445,7 +472,7 @@ def _whole_file_outcomes(
         for mutant in generate_mutants(
             source_file.read_text(encoding="utf-8")
         ):
-            mutant_copy = _copy_project(project)
+            mutant_copy = _copy_project(project, governing_file)
             try:
                 target = mutant_copy / relative_source
                 target.write_text(
@@ -474,7 +501,20 @@ def _whole_file_outcomes(
 def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
     """Analyse one project directory and return the full analysis."""
     project = project.resolve()
-    settings = load_collection_settings(project)
+    settings, source_file = load_collection_settings_with_source(
+        project
+    )
+    governing_file = None
+    settings_source = None
+    if source_file is not None:
+        if source_file.parent != project:
+            governing_file = source_file
+        if settings.non_defaults():
+            settings_source = (
+                "project root"
+                if source_file.parent == project
+                else str(source_file.parent)
+            )
     test_files, sources = _discover(project, settings)
 
     static_findings: list[StaticFinding] = []
@@ -489,7 +529,7 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
         items = selectable_test_items(source_text, settings)
         if not items:
             whole_ok, whole_outcomes, no_tests = _whole_file_outcomes(
-                project, test_file, sources, timeout
+                project, test_file, sources, timeout, governing_file
             )
             verdicts.append(
                 FileVerdict(
@@ -505,7 +545,7 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
             continue
         function_verdicts: list[FunctionVerdict] = []
 
-        baseline_copy = _copy_project(project)
+        baseline_copy = _copy_project(project, governing_file)
         try:
             for name in items:
                 baseline = _run_pytest(
@@ -536,7 +576,7 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
                 ):
                     mutants.append((relative_source, mutant))
             for relative_source, mutant in mutants:
-                mutant_copy = _copy_project(project)
+                mutant_copy = _copy_project(project, governing_file)
                 try:
                     target = mutant_copy / relative_source
                     target.write_text(
@@ -580,4 +620,5 @@ def analyse_project(project: Path, timeout: float = 30.0) -> Analysis:
         static_findings=static_findings,
         verdicts=verdicts,
         collection_settings=settings.non_defaults(),
+        settings_source=settings_source,
     )

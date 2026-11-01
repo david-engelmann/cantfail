@@ -9,6 +9,16 @@ searches them in, and only the winning source contributes
 settings. An absent setting means its default is in force, which
 the rest of the tool reads as the rules the earlier slices always
 used.
+
+Slice 7 retires the root only reading the limits under FIX-19
+recorded. The search starts at the project folder and walks
+upward through its parent folders to the filesystem root, the
+way locate_config in the findpaths module of pytest 9 searches
+from the common ancestor of its arguments, and the first folder
+holding a governing source decides. A folder holding no source
+decides nothing and the search passes through it, and a broken
+source in the deciding folder ends the search there under the
+broken source rule.
 """
 
 from __future__ import annotations
@@ -210,36 +220,75 @@ def _pyproject_source(path: Path) -> CollectionSettings | None:
     return None
 
 
-def load_collection_settings(project: Path) -> CollectionSettings:
-    """Read the naming settings in force for one project root.
+def _folder_source(
+    folder: Path,
+) -> tuple[CollectionSettings, Path] | None:
+    """The governing source of one folder, or None.
 
-    The first source in the order F1 states wins and only that
-    source contributes. A project with no source is read with the
-    defaults in force.
+    The seven source forms are tried in the order FIX-14 states,
+    and the first form that counts as a source decides for the
+    folder, a broken source included. The pair returned is the
+    settings the source contributes and the source file itself.
+    A folder holding no source returns None, and a file that is
+    present but is not a source, such as a pyproject.toml without
+    a pytest table, does not change that.
     """
     for name in ("pytest.toml", ".pytest.toml"):
-        candidate = project / name
+        candidate = folder / name
         if candidate.is_file():
-            return _pytest_toml_source(candidate)
+            return _pytest_toml_source(candidate), candidate
     for name in ("pytest.ini", ".pytest.ini"):
-        candidate = project / name
+        candidate = folder / name
         if candidate.is_file():
             settings = _ini_source(candidate, "pytest", always=True)
             if settings is not None:
-                return settings
-    pyproject = project / "pyproject.toml"
+                return settings, candidate
+    pyproject = folder / "pyproject.toml"
     if pyproject.is_file():
         settings = _pyproject_source(pyproject)
         if settings is not None:
-            return settings
-    tox_ini = project / "tox.ini"
+            return settings, pyproject
+    tox_ini = folder / "tox.ini"
     if tox_ini.is_file():
         settings = _ini_source(tox_ini, "pytest")
         if settings is not None:
-            return settings
-    setup_cfg = project / "setup.cfg"
+            return settings, tox_ini
+    setup_cfg = folder / "setup.cfg"
     if setup_cfg.is_file():
         settings = _ini_source(setup_cfg, "tool:pytest")
         if settings is not None:
-            return settings
-    return CollectionSettings()
+            return settings, setup_cfg
+    return None
+
+
+def load_collection_settings_with_source(
+    project: Path,
+) -> tuple[CollectionSettings, Path | None]:
+    """Read the naming settings in force for one project, with
+    the governing source file that contributed them.
+
+    The search walks from the project folder upward through its
+    parent folders to the filesystem root under I1, and the
+    first folder holding a governing source decides. The second
+    value returned is that source file, or None when no folder
+    on the walk holds a source and the defaults are in force.
+    """
+    folder = project
+    while True:
+        found = _folder_source(folder)
+        if found is not None:
+            return found
+        if folder.parent == folder:
+            return CollectionSettings(), None
+        folder = folder.parent
+
+
+def load_collection_settings(project: Path) -> CollectionSettings:
+    """Read the naming settings in force for one project.
+
+    The governing source is found by the upward search of I1 and
+    only that source contributes. A project with no source on
+    the walk is read with the defaults in force.
+    """
+    settings, _source = load_collection_settings_with_source(project)
+    return settings
