@@ -36,7 +36,7 @@ Slice 11 is built on a local branch as the Round 10 work increment. The static s
 
 Round 1 closed on 2026-10-31. Slice 2 was built, then audited and reviewed on two axes and attacked by a red team, and every material finding was fixed in the contract fix obligations FIX-1 to FIX-7 before the owner of this line approved the round. Round 2 closed on 2026-10-31 the same way, with slice 3 audited and reviewed on two axes and attacked by a red team and every material finding fixed under FIX-8 to FIX-13 before the owner of this line approved the round. Closed rounds are 10 of 100. Round 3 closed on 2026-11-01 the same way, with slice 4 audited and reviewed on two axes and attacked by a red team and every material finding fixed under FIX-14 to FIX-19 before the owner of this line approved the round.
 
-AGENTS.md is pending because the canonical template has not been supplied by the main chat. Pinned formats none. Part of the impatient programming portfolio, in the Gate Truth arc.
+AGENTS.md stands in this repo, the canonical template of the program with this repo's annex below its marked line. Pinned formats none. Part of the impatient programming portfolio, in the Gate Truth arc.
 
 ## Licence
 
