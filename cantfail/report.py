@@ -104,6 +104,11 @@ def to_text(analysis: Analysis) -> str:
             for key, patterns in analysis.collection_settings.items()
         )
         lines.append(f"collection settings - {parts}")
+        if analysis.settings_source is not None:
+            lines.append(
+                f"collection settings source - "
+                f"{analysis.settings_source}"
+            )
     lines.append("")
     lines.append("static findings")
     if not analysis.static_findings:
