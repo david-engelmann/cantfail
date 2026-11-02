@@ -8,7 +8,10 @@ before a direct redefinition in one module, in both the
 clearing and the value direction. The red team found the
 binder parting O4 now states and the reach limit of the
 fixture decorated class reading O3 now states. The pins
-below close those cells and state those partings.
+below close those cells and state those partings. The one
+pin that stated the reach limit itself is renamed in slice
+14 and its assertion turned to the widened reach P1 states,
+the named mechanical consequence recorded there.
 
 Every fixture here is synthetic and written for this test
 file, in the shapes the slice 13 fixtures established.
@@ -239,7 +242,7 @@ def test_a_helper_configuring_in_its_own_nested_block_still_flags():
     assert _kinds_and_lines(findings) == [("mock_return_value", 12)]
 
 
-def test_a_fixture_class_under_a_loop_does_not_poison_selection():
+def test_a_fixture_class_under_a_loop_poisons_selection_from_slice_14():
     source = (
         "for _ in range(1):\n"
         "    @pytest.fixture\n"
@@ -249,4 +252,4 @@ def test_a_fixture_class_under_a_loop_does_not_poison_selection():
         "def test_plain():\n"
         "    pass\n"
     )
-    assert selectable_test_items(source) == ["test_plain"]
+    assert selectable_test_items(source) == []

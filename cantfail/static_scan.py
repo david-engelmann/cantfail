@@ -102,16 +102,55 @@ def _is_fixture_definition(
     )
 
 
+def _descended_statement_lists(node: ast.AST):
+    """Yield the statement lists a descended statement holds, in
+    source order.
+
+    This is the one enumeration of the descent both module walks
+    consume, the definition stream of O1 and the fixture class
+    reach of P1, so a statement kind one walk learns is a kind
+    both learn. A conditional contributes its body and its else
+    branch, a try contributes its body and each handler and its
+    else and finally lists, a loop contributes its body and its
+    else list, a with block contributes its body, and a match
+    contributes the body of every case it holds. Any other
+    statement, a function or class definition among them, holds
+    no descended list here.
+    """
+    if isinstance(node, ast.If):
+        yield node.body
+        yield node.orelse
+    elif isinstance(node, _TRY_TYPES):
+        yield node.body
+        for handler in node.handlers:
+            yield handler.body
+        yield node.orelse
+        yield node.finalbody
+    elif isinstance(node, (ast.For, ast.While)):
+        yield node.body
+        yield node.orelse
+    elif isinstance(node, ast.With):
+        yield node.body
+    elif isinstance(node, _MATCH_TYPES):
+        for case in node.cases:
+            yield case.body
+
+
 def _module_has_fixture_class(tree: ast.Module) -> bool:
-    """Return True when a fixture decorated class executes at import.
+    """Return True when a fixture decorated class stands in the
+    reach of P1.
 
     Applying a fixture decorator to a class raises when the class
     statement runs, so a module holding such a class collects
     nothing under pytest and its fate is the whole file run, under
-    FIX-23. Class statements at module level and inside class
-    bodies run at import. A class defined inside a function runs
-    only when the function is called, so it does not poison the
-    module.
+    FIX-23. The reach follows every statement list the one stream
+    of O1 descends through, through the shared enumeration in
+    _descended_statement_lists, and crosses into every class body
+    standing in a statement list it is reading, the two combining
+    recursively, because a descended statement list and a class
+    body both execute at import. A class defined inside a function
+    runs only when the function is called, so it does not poison
+    the module, and the reach never crosses into a function.
     """
 
     def visit(statements) -> bool:
@@ -121,6 +160,10 @@ def _module_has_fixture_class(tree: ast.Module) -> bool:
                     return True
                 if visit(node.body):
                     return True
+            else:
+                for nested in _descended_statement_lists(node):
+                    if visit(nested):
+                        return True
         return False
 
     return visit(tree.body)
@@ -454,23 +497,9 @@ def _module_definitions(
                 node, (ast.FunctionDef, ast.AsyncFunctionDef)
             ):
                 bound[node.name] = node
-            elif isinstance(node, ast.If):
-                visit(node.body)
-                visit(node.orelse)
-            elif isinstance(node, _TRY_TYPES):
-                visit(node.body)
-                for handler in node.handlers:
-                    visit(handler.body)
-                visit(node.orelse)
-                visit(node.finalbody)
-            elif isinstance(node, (ast.For, ast.While)):
-                visit(node.body)
-                visit(node.orelse)
-            elif isinstance(node, ast.With):
-                visit(node.body)
-            elif isinstance(node, _MATCH_TYPES):
-                for case in node.cases:
-                    visit(case.body)
+            else:
+                for nested in _descended_statement_lists(node):
+                    visit(nested)
 
     visit(tree.body)
     return bound
@@ -607,6 +636,12 @@ def _merge_fixture_supply(
     decides the verdict for such a project, and it refuses the
     conftest the way it refuses any broken file, so the scan
     reading past the broken supplier invents no verdict.
+
+    A supplier holding a fixture decorated class in the reach
+    of P1 is inert the same way, under P3, because a run refuses
+    such a conftest outright and its fixtures never register,
+    so folding its supply in would flag tests against fixtures
+    no run could ever supply.
     """
     merged: dict[str, dict[str, str]] = {}
     suppliers = []
@@ -614,6 +649,8 @@ def _merge_fixture_supply(
         try:
             supply_tree = ast.parse(source)
         except SyntaxError:
+            continue
+        if _module_has_fixture_class(supply_tree):
             continue
         _supply_helpers, supply_fixtures = _helper_and_fixture_maps(
             supply_tree
