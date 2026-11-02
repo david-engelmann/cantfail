@@ -158,6 +158,37 @@ def _attribute_chain(node: ast.AST) -> tuple[str, str] | None:
     return None
 
 
+def _own_walk(
+    func: ast.FunctionDef | ast.AsyncFunctionDef,
+) -> list[ast.AST]:
+    """The nodes of a definition's own statements, in source
+    order. The walk never crosses into a nested definition,
+    class, or lambda, because what a nested definition
+    configures or returns belongs to that definition and not
+    to the one holding it, which is the boundary _own_yields
+    already states for yields."""
+
+    found: list[ast.AST] = []
+
+    def visit(node: ast.AST) -> None:
+        for child in ast.iter_child_nodes(node):
+            if isinstance(
+                child,
+                (
+                    ast.FunctionDef,
+                    ast.AsyncFunctionDef,
+                    ast.ClassDef,
+                    ast.Lambda,
+                ),
+            ):
+                continue
+            found.append(child)
+            visit(child)
+
+    visit(func)
+    return found
+
+
 def _configured_chains(
     func: ast.FunctionDef | ast.AsyncFunctionDef,
     before: tuple[int, int] | None = None,
@@ -168,9 +199,12 @@ def _configured_chains(
     the pair svc and fetch. When before is given as a line and
     column pair, only assignments standing before that position
     count, which is how the setup part of a yield fixture is read
-    apart from its teardown under L1."""
+    apart from its teardown under L1. The assignments are read
+    from the definition's own statements under _own_walk, so a
+    configuration inside a definition nested in the function
+    belongs to the nested definition and not to this one."""
     configured: dict[tuple[str, str], set[str]] = {}
-    for node in ast.walk(func):
+    for node in _own_walk(func):
         if isinstance(node, ast.Assign) and len(node.targets) == 1:
             if before is not None and (
                 node.lineno,
@@ -191,7 +225,7 @@ def _returned_names(
     func: ast.FunctionDef | ast.AsyncFunctionDef,
 ) -> list[str]:
     names: list[str] = []
-    for node in ast.walk(func):
+    for node in _own_walk(func):
         if isinstance(node, ast.Return) and isinstance(
             node.value, ast.Name
         ):
@@ -385,26 +419,32 @@ _TRY_TYPES: tuple[type, ...] = (ast.Try,) + (
     (ast.TryStar,) if hasattr(ast, "TryStar") else ()
 )
 
+_MATCH_TYPES: tuple[type, ...] = (
+    (ast.Match,) if hasattr(ast, "Match") else ()
+)
+
 
 def _module_definitions(
     tree: ast.Module,
 ) -> dict[str, ast.FunctionDef | ast.AsyncFunctionDef]:
-    """The effective function definitions of one module, under N1.
+    """The effective function definitions of one module, under O1.
 
     The stream holds the definitions standing in the module
     body and the definitions standing in the statement lists a
-    top level conditional or try statement holds, taken in
-    source order, where a conditional contributes its body and
-    its else branch and a try contributes its body and each
-    handler and its else and finally lists, and the descent is
-    recursive, so a conditional standing inside a try and a
-    conditional standing inside a conditional are read the way
-    a conditional standing at the top level is read. The
+    top level conditional or try or loop or with block or match
+    statement holds, taken in source order, where a conditional
+    contributes its body and its else branch and a try
+    contributes its body and each handler and its else and
+    finally lists and a loop contributes its body and its else
+    list and a with block contributes its body and a match
+    contributes the body of every case it holds, and the
+    descent is recursive across all six statement kinds. The
     stream never crosses into a function definition or a class
     definition. The last definition of a name in the stream is
     the effective definition of that name, under the discipline
     J2 states for the definitions standing in one body, and no
-    condition is ever evaluated, under the limits N4 states.
+    condition or iterable or manager or subject or guard is
+    ever evaluated, under the limits O4 states.
     """
     bound: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
 
@@ -423,6 +463,14 @@ def _module_definitions(
                     visit(handler.body)
                 visit(node.orelse)
                 visit(node.finalbody)
+            elif isinstance(node, (ast.For, ast.While)):
+                visit(node.body)
+                visit(node.orelse)
+            elif isinstance(node, ast.With):
+                visit(node.body)
+            elif isinstance(node, _MATCH_TYPES):
+                for case in node.cases:
+                    visit(case.body)
 
     visit(tree.body)
     return bound
@@ -463,11 +511,11 @@ def _helper_and_fixture_maps(
     in a generator body provides nothing a test receives.
 
     The definitions are read from the one module stream of
-    N1, so a definition standing under a top level conditional
-    or inside a top level try stands in the maps exactly as
-    one standing directly in the module body does, and the
-    delegation lookup reads its delegate from that same
-    stream.
+    O1, so a definition standing under a top level conditional
+    or inside a top level try or loop or with block or match
+    statement stands in the maps exactly as one standing
+    directly in the module body does, and the delegation
+    lookup reads its delegate from that same stream.
     """
     helpers: dict[str, dict[str, str]] = {}
     fixtures: dict[str, dict[str, str]] = {}
@@ -514,10 +562,10 @@ def _fixture_names(tree: ast.Module) -> set[str]:
     plain registers no fixture, however an earlier definition
     of the name was decorated, which is the reading pytest
     gives the rebound name. The effective definition is read
-    from the one module stream of N1, so a definition standing
+    from the one module stream of O1, so a definition standing
     under a top level conditional or inside a top level try
-    counts exactly as one standing directly in the module
-    body does.
+    or loop or with block or match statement counts exactly
+    as one standing directly in the module body does.
     """
     return {
         name
@@ -790,10 +838,10 @@ def scan_source(
     fixture withholds the findings of every definition of the
     name, and a name whose last definition is plain gives them.
     The effective definition is the one the module stream of
-    N1 gives for the name, so a redefinition standing under a
-    top level conditional or inside a top level try decides
-    the gate exactly as one standing directly in the module
-    body does.
+    O1 gives for the name, so a redefinition standing under a
+    top level conditional or inside a top level try or loop
+    or with block or match statement decides the gate exactly
+    as one standing directly in the module body does.
 
     The supply sources argument carries the source strings of
     the project conftest files on the chain for the file under
