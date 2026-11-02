@@ -54,3 +54,14 @@ def test_a_fixture_under_a_top_level_async_with_is_not_read():
         + _fetch_test(42)
     )
     assert scan_source(source, "test_client.py") == []
+
+
+def test_the_async_forms_are_refused_at_compilation():
+    import pytest
+
+    for source in (
+        "async for _ in stream:\n    pass\n",
+        "async with manager:\n    pass\n",
+    ):
+        with pytest.raises(SyntaxError):
+            compile(source, "probe.py", "exec")
