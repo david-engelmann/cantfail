@@ -429,7 +429,7 @@ def test_a_fixture_under_a_false_condition_is_read_all_the_same():
     assert _kinds_and_lines(findings) == [("mock_return_value", 14)]
 
 
-def test_a_fixture_inside_a_top_level_loop_is_not_read():
+def test_a_fixture_inside_a_top_level_loop_is_read_from_slice_13():
     source = (
         HEAD
         + "while True:\n"
@@ -437,10 +437,11 @@ def test_a_fixture_inside_a_top_level_loop_is_not_read():
         + "\n"
         + _fetch_test(42)
     )
-    assert scan_source(source, "test_client.py") == []
+    findings = scan_source(source, "test_client.py")
+    assert _kinds_and_lines(findings) == [("mock_return_value", 12)]
 
 
-def test_a_fixture_inside_a_top_level_with_block_is_not_read():
+def test_a_fixture_inside_a_top_level_with_block_is_read_from_slice_13():
     source = (
         HEAD
         + "with manager:\n"
@@ -448,7 +449,8 @@ def test_a_fixture_inside_a_top_level_with_block_is_not_read():
         + "\n"
         + _fetch_test(42)
     )
-    assert scan_source(source, "test_client.py") == []
+    findings = scan_source(source, "test_client.py")
+    assert _kinds_and_lines(findings) == [("mock_return_value", 12)]
 
 
 def test_a_fixture_in_a_class_body_is_not_module_supply():
