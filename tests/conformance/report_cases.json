@@ -1,0 +1,1535 @@
+{
+  "generated_by": "probe_gen.py in the Round 14 scratch, run against the landed Python at the round base head; regenerate by running it again, never by editing recordings by hand",
+  "cases": [
+    {
+      "name": "demo_end_to_end",
+      "given": {
+        "project": "demo_project",
+        "static_findings": [
+          {
+            "kind": "mock_return_value",
+            "path": "test_greeter.py",
+            "line": 8,
+            "detail": "assertion checks a value read from a mock against the return value the mock was assigned, 42"
+          }
+        ],
+        "verdicts": [
+          {
+            "path": "test_calc.py",
+            "test_functions": [
+              "test_add_one",
+              "test_is_adult_boundary",
+              "test_enabled"
+            ],
+            "baseline_ok": true,
+            "outcomes": [
+              {
+                "source_path": "calc.py",
+                "kind": "return_none",
+                "line": 2,
+                "detail": "return value x + 1",
+                "mutant_source": "def add_one(x):\n    return None\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return True",
+                "killed": true,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "return_none",
+                "line": 6,
+                "detail": "return value age >= 18",
+                "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return None\n\ndef enabled():\n    return True",
+                "killed": true,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "return_none",
+                "line": 10,
+                "detail": "return value True",
+                "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return None",
+                "killed": true,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "compare_invert",
+                "line": 6,
+                "detail": "comparison age >= 18 operator 0",
+                "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age < 18\n\ndef enabled():\n    return True",
+                "killed": true,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "bool_negate",
+                "line": 10,
+                "detail": "boolean constant True",
+                "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return False",
+                "killed": true,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "constant_shift",
+                "line": 2,
+                "detail": "numeric constant 1 moved plus one",
+                "mutant_source": "def add_one(x):\n    return x + 2\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return True",
+                "killed": true,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "constant_shift",
+                "line": 2,
+                "detail": "numeric constant 1 moved minus one",
+                "mutant_source": "def add_one(x):\n    return x + 0\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return True",
+                "killed": true,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "constant_shift",
+                "line": 6,
+                "detail": "numeric constant 18 moved plus one",
+                "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 19\n\ndef enabled():\n    return True",
+                "killed": true,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "constant_shift",
+                "line": 6,
+                "detail": "numeric constant 18 moved minus one",
+                "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 17\n\ndef enabled():\n    return True",
+                "killed": true,
+                "timed_out": false
+              }
+            ],
+            "functions": [
+              {
+                "name": "test_add_one",
+                "baseline_ok": true,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "return_none",
+                    "line": 2,
+                    "detail": "return value x + 1",
+                    "mutant_source": "def add_one(x):\n    return None\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return True",
+                    "killed": true,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "return_none",
+                    "line": 6,
+                    "detail": "return value age >= 18",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return None\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "return_none",
+                    "line": 10,
+                    "detail": "return value True",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return None",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "compare_invert",
+                    "line": 6,
+                    "detail": "comparison age >= 18 operator 0",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age < 18\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "bool_negate",
+                    "line": 10,
+                    "detail": "boolean constant True",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return False",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 2,
+                    "detail": "numeric constant 1 moved plus one",
+                    "mutant_source": "def add_one(x):\n    return x + 2\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return True",
+                    "killed": true,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 2,
+                    "detail": "numeric constant 1 moved minus one",
+                    "mutant_source": "def add_one(x):\n    return x + 0\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return True",
+                    "killed": true,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 6,
+                    "detail": "numeric constant 18 moved plus one",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 19\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 6,
+                    "detail": "numeric constant 18 moved minus one",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 17\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  }
+                ]
+              },
+              {
+                "name": "test_is_adult_boundary",
+                "baseline_ok": true,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "return_none",
+                    "line": 2,
+                    "detail": "return value x + 1",
+                    "mutant_source": "def add_one(x):\n    return None\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "return_none",
+                    "line": 6,
+                    "detail": "return value age >= 18",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return None\n\ndef enabled():\n    return True",
+                    "killed": true,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "return_none",
+                    "line": 10,
+                    "detail": "return value True",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return None",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "compare_invert",
+                    "line": 6,
+                    "detail": "comparison age >= 18 operator 0",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age < 18\n\ndef enabled():\n    return True",
+                    "killed": true,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "bool_negate",
+                    "line": 10,
+                    "detail": "boolean constant True",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return False",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 2,
+                    "detail": "numeric constant 1 moved plus one",
+                    "mutant_source": "def add_one(x):\n    return x + 2\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 2,
+                    "detail": "numeric constant 1 moved minus one",
+                    "mutant_source": "def add_one(x):\n    return x + 0\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 6,
+                    "detail": "numeric constant 18 moved plus one",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 19\n\ndef enabled():\n    return True",
+                    "killed": true,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 6,
+                    "detail": "numeric constant 18 moved minus one",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 17\n\ndef enabled():\n    return True",
+                    "killed": true,
+                    "timed_out": false
+                  }
+                ]
+              },
+              {
+                "name": "test_enabled",
+                "baseline_ok": true,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "return_none",
+                    "line": 2,
+                    "detail": "return value x + 1",
+                    "mutant_source": "def add_one(x):\n    return None\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "return_none",
+                    "line": 6,
+                    "detail": "return value age >= 18",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return None\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "return_none",
+                    "line": 10,
+                    "detail": "return value True",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return None",
+                    "killed": true,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "compare_invert",
+                    "line": 6,
+                    "detail": "comparison age >= 18 operator 0",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age < 18\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "bool_negate",
+                    "line": 10,
+                    "detail": "boolean constant True",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return False",
+                    "killed": true,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 2,
+                    "detail": "numeric constant 1 moved plus one",
+                    "mutant_source": "def add_one(x):\n    return x + 2\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 2,
+                    "detail": "numeric constant 1 moved minus one",
+                    "mutant_source": "def add_one(x):\n    return x + 0\n\ndef is_adult(age):\n    return age >= 18\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 6,
+                    "detail": "numeric constant 18 moved plus one",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 19\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 6,
+                    "detail": "numeric constant 18 moved minus one",
+                    "mutant_source": "def add_one(x):\n    return x + 1\n\ndef is_adult(age):\n    return age >= 17\n\ndef enabled():\n    return True",
+                    "killed": false,
+                    "timed_out": false
+                  }
+                ]
+              }
+            ],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          },
+          {
+            "path": "test_greeter.py",
+            "test_functions": [
+              "test_fetch_returns_what_it_was_told"
+            ],
+            "baseline_ok": true,
+            "outcomes": [
+              {
+                "source_path": "greeter.py",
+                "kind": "return_none",
+                "line": 2,
+                "detail": "return value 'hello'",
+                "mutant_source": "def greet():\n    return None",
+                "killed": false,
+                "timed_out": false
+              }
+            ],
+            "functions": [
+              {
+                "name": "test_fetch_returns_what_it_was_told",
+                "baseline_ok": true,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "greeter.py",
+                    "kind": "return_none",
+                    "line": 2,
+                    "detail": "return value 'hello'",
+                    "mutant_source": "def greet():\n    return None",
+                    "killed": false,
+                    "timed_out": false
+                  }
+                ]
+              }
+            ],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"demo_project\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [\n    {\n      \"detail\": \"assertion checks a value read from a mock against the return value the mock was assigned, 42\",\n      \"kind\": \"mock_return_value\",\n      \"line\": 8,\n      \"path\": \"test_greeter.py\"\n    }\n  ],\n  \"verdicts\": [\n    {\n      \"functions\": [\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"return value x + 1\",\n              \"kind\": \"return_none\",\n              \"line\": 2,\n              \"result\": \"killed\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"return value age >= 18\",\n              \"kind\": \"return_none\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"return value True\",\n              \"kind\": \"return_none\",\n              \"line\": 10,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"comparison age >= 18 operator 0\",\n              \"kind\": \"compare_invert\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"boolean constant True\",\n              \"kind\": \"bool_negate\",\n              \"line\": 10,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 1 moved plus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 2,\n              \"result\": \"killed\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 1 moved minus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 2,\n              \"result\": \"killed\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 18 moved plus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 18 moved minus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_add_one\",\n          \"status\": \"can_fail\",\n          \"surviving_mutants\": [\n            {\n              \"detail\": \"return value age >= 18\",\n              \"kind\": \"return_none\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"return value True\",\n              \"kind\": \"return_none\",\n              \"line\": 10,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"comparison age >= 18 operator 0\",\n              \"kind\": \"compare_invert\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"boolean constant True\",\n              \"kind\": \"bool_negate\",\n              \"line\": 10,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 18 moved plus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 18 moved minus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ]\n        },\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"return value x + 1\",\n              \"kind\": \"return_none\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"return value age >= 18\",\n              \"kind\": \"return_none\",\n              \"line\": 6,\n              \"result\": \"killed\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"return value True\",\n              \"kind\": \"return_none\",\n              \"line\": 10,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"comparison age >= 18 operator 0\",\n              \"kind\": \"compare_invert\",\n              \"line\": 6,\n              \"result\": \"killed\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"boolean constant True\",\n              \"kind\": \"bool_negate\",\n              \"line\": 10,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 1 moved plus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 1 moved minus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 18 moved plus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 6,\n              \"result\": \"killed\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 18 moved minus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 6,\n              \"result\": \"killed\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_is_adult_boundary\",\n          \"status\": \"can_fail\",\n          \"surviving_mutants\": [\n            {\n              \"detail\": \"return value x + 1\",\n              \"kind\": \"return_none\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"return value True\",\n              \"kind\": \"return_none\",\n              \"line\": 10,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"boolean constant True\",\n              \"kind\": \"bool_negate\",\n              \"line\": 10,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 1 moved plus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 1 moved minus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ]\n        },\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"return value x + 1\",\n              \"kind\": \"return_none\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"return value age >= 18\",\n              \"kind\": \"return_none\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"return value True\",\n              \"kind\": \"return_none\",\n              \"line\": 10,\n              \"result\": \"killed\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"comparison age >= 18 operator 0\",\n              \"kind\": \"compare_invert\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"boolean constant True\",\n              \"kind\": \"bool_negate\",\n              \"line\": 10,\n              \"result\": \"killed\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 1 moved plus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 1 moved minus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 18 moved plus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 18 moved minus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_enabled\",\n          \"status\": \"can_fail\",\n          \"surviving_mutants\": [\n            {\n              \"detail\": \"return value x + 1\",\n              \"kind\": \"return_none\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"return value age >= 18\",\n              \"kind\": \"return_none\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"comparison age >= 18 operator 0\",\n              \"kind\": \"compare_invert\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 1 moved plus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 1 moved minus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 18 moved plus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"numeric constant 18 moved minus one\",\n              \"kind\": \"constant_shift\",\n              \"line\": 6,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ]\n        }\n      ],\n      \"mutants\": [\n        {\n          \"detail\": \"return value x + 1\",\n          \"kind\": \"return_none\",\n          \"line\": 2,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"return value age >= 18\",\n          \"kind\": \"return_none\",\n          \"line\": 6,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"return value True\",\n          \"kind\": \"return_none\",\n          \"line\": 10,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"comparison age >= 18 operator 0\",\n          \"kind\": \"compare_invert\",\n          \"line\": 6,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"boolean constant True\",\n          \"kind\": \"bool_negate\",\n          \"line\": 10,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"numeric constant 1 moved plus one\",\n          \"kind\": \"constant_shift\",\n          \"line\": 2,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"numeric constant 1 moved minus one\",\n          \"kind\": \"constant_shift\",\n          \"line\": 2,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"numeric constant 18 moved plus one\",\n          \"kind\": \"constant_shift\",\n          \"line\": 6,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"numeric constant 18 moved minus one\",\n          \"kind\": \"constant_shift\",\n          \"line\": 6,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_calc.py\",\n      \"status\": \"can_fail\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [\n        \"test_add_one\",\n        \"test_is_adult_boundary\",\n        \"test_enabled\"\n      ],\n      \"whole_file\": false\n    },\n    {\n      \"functions\": [\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"return value 'hello'\",\n              \"kind\": \"return_none\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"greeter.py\"\n            }\n          ],\n          \"name\": \"test_fetch_returns_what_it_was_told\",\n          \"status\": \"decorative_candidate\",\n          \"surviving_mutants\": [\n            {\n              \"detail\": \"return value 'hello'\",\n              \"kind\": \"return_none\",\n              \"line\": 2,\n              \"result\": \"survived\",\n              \"source\": \"greeter.py\"\n            }\n          ]\n        }\n      ],\n      \"mutants\": [\n        {\n          \"detail\": \"return value 'hello'\",\n          \"kind\": \"return_none\",\n          \"line\": 2,\n          \"result\": \"survived\",\n          \"source\": \"greeter.py\"\n        }\n      ],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_greeter.py\",\n      \"status\": \"decorative_candidate\",\n      \"surviving_mutants\": [\n        {\n          \"detail\": \"return value 'hello'\",\n          \"kind\": \"return_none\",\n          \"line\": 2,\n          \"result\": \"survived\",\n          \"source\": \"greeter.py\"\n        }\n      ],\n      \"test_functions\": [\n        \"test_fetch_returns_what_it_was_told\"\n      ],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - demo_project\nschema - cantfail-report/3\n\nstatic findings\ntest_greeter.py line 8 - mock_return_value - assertion checks a value read from a mock against the return value the mock was assigned, 42\n\ntest file verdicts\ntest_calc.py - can_fail\n  function - test_add_one - can_fail\n    this function turned red under 3 of 9 mutants in the fixed panel\n    mutant that walked through - calc.py - return_none at line 6 - return value age >= 18\n    mutant that walked through - calc.py - return_none at line 10 - return value True\n    mutant that walked through - calc.py - compare_invert at line 6 - comparison age >= 18 operator 0\n    mutant that walked through - calc.py - bool_negate at line 10 - boolean constant True\n    mutant that walked through - calc.py - constant_shift at line 6 - numeric constant 18 moved plus one\n    mutant that walked through - calc.py - constant_shift at line 6 - numeric constant 18 moved minus one\n  function - test_is_adult_boundary - can_fail\n    this function turned red under 4 of 9 mutants in the fixed panel\n    mutant that walked through - calc.py - return_none at line 2 - return value x + 1\n    mutant that walked through - calc.py - return_none at line 10 - return value True\n    mutant that walked through - calc.py - bool_negate at line 10 - boolean constant True\n    mutant that walked through - calc.py - constant_shift at line 2 - numeric constant 1 moved plus one\n    mutant that walked through - calc.py - constant_shift at line 2 - numeric constant 1 moved minus one\n  function - test_enabled - can_fail\n    this function turned red under 2 of 9 mutants in the fixed panel\n    mutant that walked through - calc.py - return_none at line 2 - return value x + 1\n    mutant that walked through - calc.py - return_none at line 6 - return value age >= 18\n    mutant that walked through - calc.py - compare_invert at line 6 - comparison age >= 18 operator 0\n    mutant that walked through - calc.py - constant_shift at line 2 - numeric constant 1 moved plus one\n    mutant that walked through - calc.py - constant_shift at line 2 - numeric constant 1 moved minus one\n    mutant that walked through - calc.py - constant_shift at line 6 - numeric constant 18 moved plus one\n    mutant that walked through - calc.py - constant_shift at line 6 - numeric constant 18 moved minus one\n  this file turned red under 9 of 9 mutants in the fixed panel\ntest_greeter.py - decorative_candidate\n  function - test_fetch_returns_what_it_was_told - decorative_candidate\n    decorative candidate - this function stayed green under every applicable mutant in the fixed panel\n    mutant that walked through - greeter.py - return_none at line 2 - return value 'hello'\n  decorative candidate - every judged function in this file stayed green under every applicable mutant in the fixed panel\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "empty_analysis",
+      "given": {
+        "project": "blank",
+        "static_findings": [],
+        "verdicts": [],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"blank\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": []\n}",
+      "expected_text": "cantfail report\nproject - blank\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\nno test files found\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "findings_with_escapes",
+      "given": {
+        "project": "escapes",
+        "static_findings": [
+          {
+            "kind": "mock_return_value",
+            "path": "test_a.py",
+            "line": 8,
+            "detail": "checks a \"quoted\" value \\ with\ttabs"
+          },
+          {
+            "kind": "bare_assert",
+            "path": "test_b.py",
+            "line": 1,
+            "detail": "line one\nline two"
+          },
+          {
+            "kind": "unicode",
+            "path": "test_c.py",
+            "line": 42,
+            "detail": "an \u00e9moji \ud83d\ude00 and a \u007f and a \u0001"
+          }
+        ],
+        "verdicts": [],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"escapes\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [\n    {\n      \"detail\": \"checks a \\\"quoted\\\" value \\\\ with\\ttabs\",\n      \"kind\": \"mock_return_value\",\n      \"line\": 8,\n      \"path\": \"test_a.py\"\n    },\n    {\n      \"detail\": \"line one\\nline two\",\n      \"kind\": \"bare_assert\",\n      \"line\": 1,\n      \"path\": \"test_b.py\"\n    },\n    {\n      \"detail\": \"an \\u00e9moji \\ud83d\\ude00 and a \\u007f and a \\u0001\",\n      \"kind\": \"unicode\",\n      \"line\": 42,\n      \"path\": \"test_c.py\"\n    }\n  ],\n  \"verdicts\": []\n}",
+      "expected_text": "cantfail report\nproject - escapes\nschema - cantfail-report/3\n\nstatic findings\ntest_a.py line 8 - mock_return_value - checks a \"quoted\" value \\ with\ttabs\ntest_b.py line 1 - bare_assert - line one\nline two\ntest_c.py line 42 - unicode - an \u00e9moji \ud83d\ude00 and a \u007f and a \u0001\n\ntest file verdicts\nno test files found\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "whole_file_decorative",
+      "given": {
+        "project": "wf",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_a.py",
+            "test_functions": [],
+            "baseline_ok": true,
+            "outcomes": [
+              {
+                "source_path": "calc.py",
+                "kind": "comparison_flip",
+                "line": 5,
+                "detail": "x < 3 becomes x >= 3",
+                "mutant_source": "calc.py",
+                "killed": false,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "constant_shift",
+                "line": 9,
+                "detail": "1 becomes 2",
+                "mutant_source": "calc.py",
+                "killed": false,
+                "timed_out": false
+              }
+            ],
+            "functions": [],
+            "whole_file": true,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"wf\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [],\n      \"mutants\": [\n        {\n          \"detail\": \"x < 3 becomes x >= 3\",\n          \"kind\": \"comparison_flip\",\n          \"line\": 5,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"1 becomes 2\",\n          \"kind\": \"constant_shift\",\n          \"line\": 9,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_a.py\",\n      \"status\": \"decorative_candidate\",\n      \"surviving_mutants\": [\n        {\n          \"detail\": \"x < 3 becomes x >= 3\",\n          \"kind\": \"comparison_flip\",\n          \"line\": 5,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"1 becomes 2\",\n          \"kind\": \"constant_shift\",\n          \"line\": 9,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"test_functions\": [],\n      \"whole_file\": true\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - wf\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_a.py - decorative_candidate\n  decorative candidate - every judged function in this file stayed green under every applicable mutant in the fixed panel\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "whole_file_no_tests",
+      "given": {
+        "project": "wf",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_none.py",
+            "test_functions": [],
+            "baseline_ok": true,
+            "outcomes": [],
+            "functions": [],
+            "whole_file": true,
+            "no_tests": true,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"wf\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [],\n      \"mutants\": [],\n      \"no_tests\": true,\n      \"partial_selection\": false,\n      \"path\": \"test_none.py\",\n      \"status\": \"no_applicable_mutants\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [],\n      \"whole_file\": true\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - wf\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_none.py - no_applicable_mutants\n  this file holds no test pytest could collect, so no mutant in the panel has a test to be judged by\n  no mutant in the fixed panel applied\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "whole_file_baseline_failed",
+      "given": {
+        "project": "wf",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_bad.py",
+            "test_functions": [],
+            "baseline_ok": false,
+            "outcomes": [
+              {
+                "source_path": "calc.py",
+                "kind": "return_none",
+                "line": 2,
+                "detail": "return value x + 1",
+                "mutant_source": "calc.py",
+                "killed": true,
+                "timed_out": false
+              }
+            ],
+            "functions": [],
+            "whole_file": true,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"wf\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [],\n      \"mutants\": [\n        {\n          \"detail\": \"return value x + 1\",\n          \"kind\": \"return_none\",\n          \"line\": 2,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_bad.py\",\n      \"status\": \"baseline_failed\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [],\n      \"whole_file\": true\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - wf\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_bad.py - baseline_failed\n  the unmutated run already fails so this file is not judged decorative\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "whole_file_timeout_only",
+      "given": {
+        "project": "wf",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_slow.py",
+            "test_functions": [],
+            "baseline_ok": true,
+            "outcomes": [
+              {
+                "source_path": "calc.py",
+                "kind": "constant_shift",
+                "line": 7,
+                "detail": "3 becomes 4",
+                "mutant_source": "calc.py",
+                "killed": false,
+                "timed_out": true
+              }
+            ],
+            "functions": [],
+            "whole_file": true,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"wf\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [],\n      \"mutants\": [\n        {\n          \"detail\": \"3 becomes 4\",\n          \"kind\": \"constant_shift\",\n          \"line\": 7,\n          \"result\": \"timeout\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_slow.py\",\n      \"status\": \"inconclusive\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [],\n      \"whole_file\": true\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - wf\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_slow.py - inconclusive\n  this file turned red under 1 of 1 mutants in the fixed panel\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "whole_file_no_outcomes",
+      "given": {
+        "project": "wf",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_plain.py",
+            "test_functions": [],
+            "baseline_ok": true,
+            "outcomes": [],
+            "functions": [],
+            "whole_file": true,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"wf\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [],\n      \"mutants\": [],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_plain.py\",\n      \"status\": \"no_applicable_mutants\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [],\n      \"whole_file\": true\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - wf\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_plain.py - no_applicable_mutants\n  no mutant in the fixed panel applied\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "rollup_all_decorative",
+      "given": {
+        "project": "roll",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_roll.py",
+            "test_functions": [
+              "test_a",
+              "test_b"
+            ],
+            "baseline_ok": true,
+            "outcomes": [
+              {
+                "source_path": "calc.py",
+                "kind": "comparison_flip",
+                "line": 5,
+                "detail": "x < 3 becomes x >= 3",
+                "mutant_source": "calc.py",
+                "killed": false,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "negate_bool",
+                "line": 3,
+                "detail": "True becomes False",
+                "mutant_source": "calc.py",
+                "killed": false,
+                "timed_out": false
+              }
+            ],
+            "functions": [
+              {
+                "name": "test_a",
+                "baseline_ok": true,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "comparison_flip",
+                    "line": 5,
+                    "detail": "x < 3 becomes x >= 3",
+                    "mutant_source": "calc.py",
+                    "killed": false,
+                    "timed_out": false
+                  }
+                ]
+              },
+              {
+                "name": "test_b",
+                "baseline_ok": true,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "negate_bool",
+                    "line": 3,
+                    "detail": "True becomes False",
+                    "mutant_source": "calc.py",
+                    "killed": false,
+                    "timed_out": false
+                  }
+                ]
+              }
+            ],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"roll\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_a\",\n          \"status\": \"decorative_candidate\",\n          \"surviving_mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ]\n        },\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"True becomes False\",\n              \"kind\": \"negate_bool\",\n              \"line\": 3,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_b\",\n          \"status\": \"decorative_candidate\",\n          \"surviving_mutants\": [\n            {\n              \"detail\": \"True becomes False\",\n              \"kind\": \"negate_bool\",\n              \"line\": 3,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ]\n        }\n      ],\n      \"mutants\": [\n        {\n          \"detail\": \"x < 3 becomes x >= 3\",\n          \"kind\": \"comparison_flip\",\n          \"line\": 5,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"True becomes False\",\n          \"kind\": \"negate_bool\",\n          \"line\": 3,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_roll.py\",\n      \"status\": \"decorative_candidate\",\n      \"surviving_mutants\": [\n        {\n          \"detail\": \"x < 3 becomes x >= 3\",\n          \"kind\": \"comparison_flip\",\n          \"line\": 5,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"True becomes False\",\n          \"kind\": \"negate_bool\",\n          \"line\": 3,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"test_functions\": [\n        \"test_a\",\n        \"test_b\"\n      ],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - roll\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_roll.py - decorative_candidate\n  function - test_a - decorative_candidate\n    decorative candidate - this function stayed green under every applicable mutant in the fixed panel\n    mutant that walked through - calc.py - comparison_flip at line 5 - x < 3 becomes x >= 3\n  function - test_b - decorative_candidate\n    decorative candidate - this function stayed green under every applicable mutant in the fixed panel\n    mutant that walked through - calc.py - negate_bool at line 3 - True becomes False\n  decorative candidate - every judged function in this file stayed green under every applicable mutant in the fixed panel\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "rollup_one_can_fail",
+      "given": {
+        "project": "roll",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_roll.py",
+            "test_functions": [
+              "test_a",
+              "test_c"
+            ],
+            "baseline_ok": true,
+            "outcomes": [
+              {
+                "source_path": "calc.py",
+                "kind": "comparison_flip",
+                "line": 5,
+                "detail": "x < 3 becomes x >= 3",
+                "mutant_source": "calc.py",
+                "killed": false,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "return_none",
+                "line": 2,
+                "detail": "return value x + 1",
+                "mutant_source": "calc.py",
+                "killed": true,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "constant_shift",
+                "line": 7,
+                "detail": "3 becomes 4",
+                "mutant_source": "calc.py",
+                "killed": false,
+                "timed_out": true
+              }
+            ],
+            "functions": [
+              {
+                "name": "test_a",
+                "baseline_ok": true,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "comparison_flip",
+                    "line": 5,
+                    "detail": "x < 3 becomes x >= 3",
+                    "mutant_source": "calc.py",
+                    "killed": false,
+                    "timed_out": false
+                  }
+                ]
+              },
+              {
+                "name": "test_c",
+                "baseline_ok": true,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "return_none",
+                    "line": 2,
+                    "detail": "return value x + 1",
+                    "mutant_source": "calc.py",
+                    "killed": true,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "comparison_flip",
+                    "line": 5,
+                    "detail": "x < 3 becomes x >= 3",
+                    "mutant_source": "calc.py",
+                    "killed": false,
+                    "timed_out": false
+                  },
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 7,
+                    "detail": "3 becomes 4",
+                    "mutant_source": "calc.py",
+                    "killed": false,
+                    "timed_out": true
+                  }
+                ]
+              }
+            ],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"roll\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_a\",\n          \"status\": \"decorative_candidate\",\n          \"surviving_mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ]\n        },\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"return value x + 1\",\n              \"kind\": \"return_none\",\n              \"line\": 2,\n              \"result\": \"killed\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            },\n            {\n              \"detail\": \"3 becomes 4\",\n              \"kind\": \"constant_shift\",\n              \"line\": 7,\n              \"result\": \"timeout\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_c\",\n          \"status\": \"can_fail\",\n          \"surviving_mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ]\n        }\n      ],\n      \"mutants\": [\n        {\n          \"detail\": \"x < 3 becomes x >= 3\",\n          \"kind\": \"comparison_flip\",\n          \"line\": 5,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"return value x + 1\",\n          \"kind\": \"return_none\",\n          \"line\": 2,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"3 becomes 4\",\n          \"kind\": \"constant_shift\",\n          \"line\": 7,\n          \"result\": \"timeout\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_roll.py\",\n      \"status\": \"can_fail\",\n      \"surviving_mutants\": [\n        {\n          \"detail\": \"x < 3 becomes x >= 3\",\n          \"kind\": \"comparison_flip\",\n          \"line\": 5,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"test_functions\": [\n        \"test_a\",\n        \"test_c\"\n      ],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - roll\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_roll.py - can_fail\n  function - test_a - decorative_candidate\n    decorative candidate - this function stayed green under every applicable mutant in the fixed panel\n    mutant that walked through - calc.py - comparison_flip at line 5 - x < 3 becomes x >= 3\n  function - test_c - can_fail\n    this function turned red under 2 of 3 mutants in the fixed panel\n    mutant that walked through - calc.py - comparison_flip at line 5 - x < 3 becomes x >= 3\n  this file turned red under 2 of 3 mutants in the fixed panel\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "rollup_failed_and_decorative",
+      "given": {
+        "project": "roll",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_roll.py",
+            "test_functions": [
+              "test_a",
+              "test_d"
+            ],
+            "baseline_ok": true,
+            "outcomes": [
+              {
+                "source_path": "calc.py",
+                "kind": "comparison_flip",
+                "line": 5,
+                "detail": "x < 3 becomes x >= 3",
+                "mutant_source": "calc.py",
+                "killed": false,
+                "timed_out": false
+              },
+              {
+                "source_path": "calc.py",
+                "kind": "return_none",
+                "line": 2,
+                "detail": "return value x + 1",
+                "mutant_source": "calc.py",
+                "killed": true,
+                "timed_out": false
+              }
+            ],
+            "functions": [
+              {
+                "name": "test_a",
+                "baseline_ok": true,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "comparison_flip",
+                    "line": 5,
+                    "detail": "x < 3 becomes x >= 3",
+                    "mutant_source": "calc.py",
+                    "killed": false,
+                    "timed_out": false
+                  }
+                ]
+              },
+              {
+                "name": "test_d",
+                "baseline_ok": false,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "return_none",
+                    "line": 2,
+                    "detail": "return value x + 1",
+                    "mutant_source": "calc.py",
+                    "killed": true,
+                    "timed_out": false
+                  }
+                ]
+              }
+            ],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"roll\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_a\",\n          \"status\": \"decorative_candidate\",\n          \"surviving_mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ]\n        },\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"return value x + 1\",\n              \"kind\": \"return_none\",\n              \"line\": 2,\n              \"result\": \"killed\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_d\",\n          \"status\": \"baseline_failed\",\n          \"surviving_mutants\": []\n        }\n      ],\n      \"mutants\": [\n        {\n          \"detail\": \"x < 3 becomes x >= 3\",\n          \"kind\": \"comparison_flip\",\n          \"line\": 5,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        },\n        {\n          \"detail\": \"return value x + 1\",\n          \"kind\": \"return_none\",\n          \"line\": 2,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_roll.py\",\n      \"status\": \"baseline_failed\",\n      \"surviving_mutants\": [\n        {\n          \"detail\": \"x < 3 becomes x >= 3\",\n          \"kind\": \"comparison_flip\",\n          \"line\": 5,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"test_functions\": [\n        \"test_a\",\n        \"test_d\"\n      ],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - roll\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_roll.py - baseline_failed\n  function - test_a - decorative_candidate\n    decorative candidate - this function stayed green under every applicable mutant in the fixed panel\n    mutant that walked through - calc.py - comparison_flip at line 5 - x < 3 becomes x >= 3\n  function - test_d - baseline_failed\n    the unmutated run of this function already fails so it is not judged decorative\n  the unmutated run already fails so this file is not judged decorative\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "rollup_failed_and_timed_out",
+      "given": {
+        "project": "roll",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_roll.py",
+            "test_functions": [
+              "test_d",
+              "test_e"
+            ],
+            "baseline_ok": true,
+            "outcomes": [],
+            "functions": [
+              {
+                "name": "test_d",
+                "baseline_ok": false,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "return_none",
+                    "line": 2,
+                    "detail": "return value x + 1",
+                    "mutant_source": "calc.py",
+                    "killed": true,
+                    "timed_out": false
+                  }
+                ]
+              },
+              {
+                "name": "test_e",
+                "baseline_ok": true,
+                "baseline_timed_out": true,
+                "outcomes": []
+              }
+            ],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"roll\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"return value x + 1\",\n              \"kind\": \"return_none\",\n              \"line\": 2,\n              \"result\": \"killed\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_d\",\n          \"status\": \"baseline_failed\",\n          \"surviving_mutants\": []\n        },\n        {\n          \"mutants\": [],\n          \"name\": \"test_e\",\n          \"status\": \"inconclusive\",\n          \"surviving_mutants\": []\n        }\n      ],\n      \"mutants\": [],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_roll.py\",\n      \"status\": \"baseline_failed\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [\n        \"test_d\",\n        \"test_e\"\n      ],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - roll\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_roll.py - baseline_failed\n  function - test_d - baseline_failed\n    the unmutated run of this function already fails so it is not judged decorative\n  function - test_e - inconclusive\n    this function turned red under 0 of 0 mutants in the fixed panel\n  the unmutated run already fails so this file is not judged decorative\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "rollup_timed_out_only",
+      "given": {
+        "project": "roll",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_roll.py",
+            "test_functions": [
+              "test_e"
+            ],
+            "baseline_ok": true,
+            "outcomes": [],
+            "functions": [
+              {
+                "name": "test_e",
+                "baseline_ok": true,
+                "baseline_timed_out": true,
+                "outcomes": []
+              }
+            ],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"roll\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [\n        {\n          \"mutants\": [],\n          \"name\": \"test_e\",\n          \"status\": \"inconclusive\",\n          \"surviving_mutants\": []\n        }\n      ],\n      \"mutants\": [],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_roll.py\",\n      \"status\": \"inconclusive\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [\n        \"test_e\"\n      ],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - roll\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_roll.py - inconclusive\n  function - test_e - inconclusive\n    this function turned red under 0 of 0 mutants in the fixed panel\n  no mutant in the fixed panel applied\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "rollup_nothing_judged",
+      "given": {
+        "project": "roll",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_roll.py",
+            "test_functions": [
+              "test_f"
+            ],
+            "baseline_ok": true,
+            "outcomes": [],
+            "functions": [
+              {
+                "name": "test_f",
+                "baseline_ok": true,
+                "baseline_timed_out": false,
+                "outcomes": []
+              }
+            ],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"roll\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [\n        {\n          \"mutants\": [],\n          \"name\": \"test_f\",\n          \"status\": \"no_applicable_mutants\",\n          \"surviving_mutants\": []\n        }\n      ],\n      \"mutants\": [],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_roll.py\",\n      \"status\": \"no_applicable_mutants\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [\n        \"test_f\"\n      ],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - roll\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_roll.py - no_applicable_mutants\n  function - test_f - no_applicable_mutants\n    no mutant in the fixed panel applied to this function\n  no mutant in the fixed panel applied\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "bare_outcomes_baseline_failed",
+      "given": {
+        "project": "bare",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_bare.py",
+            "test_functions": [],
+            "baseline_ok": false,
+            "outcomes": [
+              {
+                "source_path": "calc.py",
+                "kind": "return_none",
+                "line": 2,
+                "detail": "return value x + 1",
+                "mutant_source": "calc.py",
+                "killed": true,
+                "timed_out": false
+              }
+            ],
+            "functions": [],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"bare\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [],\n      \"mutants\": [\n        {\n          \"detail\": \"return value x + 1\",\n          \"kind\": \"return_none\",\n          \"line\": 2,\n          \"result\": \"killed\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_bare.py\",\n      \"status\": \"baseline_failed\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - bare\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_bare.py - baseline_failed\n  the unmutated run already fails so this file is not judged decorative\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "bare_outcomes_decorative",
+      "given": {
+        "project": "bare",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_bare.py",
+            "test_functions": [],
+            "baseline_ok": true,
+            "outcomes": [
+              {
+                "source_path": "calc.py",
+                "kind": "comparison_flip",
+                "line": 5,
+                "detail": "x < 3 becomes x >= 3",
+                "mutant_source": "calc.py",
+                "killed": false,
+                "timed_out": false
+              }
+            ],
+            "functions": [],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"bare\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [],\n      \"mutants\": [\n        {\n          \"detail\": \"x < 3 becomes x >= 3\",\n          \"kind\": \"comparison_flip\",\n          \"line\": 5,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_bare.py\",\n      \"status\": \"decorative_candidate\",\n      \"surviving_mutants\": [\n        {\n          \"detail\": \"x < 3 becomes x >= 3\",\n          \"kind\": \"comparison_flip\",\n          \"line\": 5,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"test_functions\": [],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - bare\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_bare.py - decorative_candidate\n  decorative candidate - every judged function in this file stayed green under every applicable mutant in the fixed panel\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "bare_nothing",
+      "given": {
+        "project": "bare",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_bare.py",
+            "test_functions": [
+              "test_x"
+            ],
+            "baseline_ok": true,
+            "outcomes": [],
+            "functions": [],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"bare\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [],\n      \"mutants\": [],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_bare.py\",\n      \"status\": \"no_applicable_mutants\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [\n        \"test_x\"\n      ],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - bare\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_bare.py - no_applicable_mutants\n  no mutant in the fixed panel applied\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "function_timeout_precedence",
+      "given": {
+        "project": "fn",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_fn.py",
+            "test_functions": [
+              "test_e"
+            ],
+            "baseline_ok": true,
+            "outcomes": [],
+            "functions": [
+              {
+                "name": "test_e",
+                "baseline_ok": true,
+                "baseline_timed_out": true,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "comparison_flip",
+                    "line": 5,
+                    "detail": "x < 3 becomes x >= 3",
+                    "mutant_source": "calc.py",
+                    "killed": false,
+                    "timed_out": false
+                  }
+                ]
+              }
+            ],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"fn\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_e\",\n          \"status\": \"inconclusive\",\n          \"surviving_mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ]\n        }\n      ],\n      \"mutants\": [],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_fn.py\",\n      \"status\": \"inconclusive\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [\n        \"test_e\"\n      ],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - fn\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_fn.py - inconclusive\n  function - test_e - inconclusive\n    this function turned red under 0 of 1 mutants in the fixed panel\n    mutant that walked through - calc.py - comparison_flip at line 5 - x < 3 becomes x >= 3\n  no mutant in the fixed panel applied\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "function_timeout_beats_failed",
+      "given": {
+        "project": "fn",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_fn.py",
+            "test_functions": [
+              "test_e"
+            ],
+            "baseline_ok": true,
+            "outcomes": [],
+            "functions": [
+              {
+                "name": "test_e",
+                "baseline_ok": false,
+                "baseline_timed_out": true,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "comparison_flip",
+                    "line": 5,
+                    "detail": "x < 3 becomes x >= 3",
+                    "mutant_source": "calc.py",
+                    "killed": false,
+                    "timed_out": false
+                  }
+                ]
+              }
+            ],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"fn\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_e\",\n          \"status\": \"inconclusive\",\n          \"surviving_mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ]\n        }\n      ],\n      \"mutants\": [],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_fn.py\",\n      \"status\": \"inconclusive\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [\n        \"test_e\"\n      ],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - fn\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_fn.py - inconclusive\n  function - test_e - inconclusive\n    this function turned red under 0 of 1 mutants in the fixed panel\n    mutant that walked through - calc.py - comparison_flip at line 5 - x < 3 becomes x >= 3\n  no mutant in the fixed panel applied\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "function_timeout_outcomes",
+      "given": {
+        "project": "fn",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_fn.py",
+            "test_functions": [
+              "test_g"
+            ],
+            "baseline_ok": true,
+            "outcomes": [],
+            "functions": [
+              {
+                "name": "test_g",
+                "baseline_ok": true,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "constant_shift",
+                    "line": 7,
+                    "detail": "3 becomes 4",
+                    "mutant_source": "calc.py",
+                    "killed": false,
+                    "timed_out": true
+                  }
+                ]
+              }
+            ],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"fn\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"3 becomes 4\",\n              \"kind\": \"constant_shift\",\n              \"line\": 7,\n              \"result\": \"timeout\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_g\",\n          \"status\": \"inconclusive\",\n          \"surviving_mutants\": []\n        }\n      ],\n      \"mutants\": [],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_fn.py\",\n      \"status\": \"inconclusive\",\n      \"surviving_mutants\": [],\n      \"test_functions\": [\n        \"test_g\"\n      ],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - fn\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_fn.py - inconclusive\n  function - test_g - inconclusive\n    this function turned red under 1 of 1 mutants in the fixed panel\n  no mutant in the fixed panel applied\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "settings_disclosed_with_source",
+      "given": {
+        "project": "set",
+        "static_findings": [],
+        "verdicts": [],
+        "collection_settings": [
+          [
+            "python_functions",
+            [
+              "qa_",
+              "check_"
+            ]
+          ],
+          [
+            "python_files",
+            [
+              "spec_*.py"
+            ]
+          ]
+        ],
+        "settings_source": "/somewhere/parent/pytest.ini"
+      },
+      "expected_json": "{\n  \"collection_settings\": {\n    \"python_files\": [\n      \"spec_*.py\"\n    ],\n    \"python_functions\": [\n      \"qa_\",\n      \"check_\"\n    ]\n  },\n  \"collection_settings_source\": \"/somewhere/parent/pytest.ini\",\n  \"project\": \"set\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": []\n}",
+      "expected_text": "cantfail report\nproject - set\nschema - cantfail-report/3\ncollection settings - python_functions qa_ check_, python_files spec_*.py\ncollection settings source - /somewhere/parent/pytest.ini\n\nstatic findings\nnone\n\ntest file verdicts\nno test files found\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "settings_disclosed_without_source",
+      "given": {
+        "project": "set",
+        "static_findings": [],
+        "verdicts": [],
+        "collection_settings": [
+          [
+            "python_classes",
+            [
+              "Spec"
+            ]
+          ]
+        ],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"collection_settings\": {\n    \"python_classes\": [\n      \"Spec\"\n    ]\n  },\n  \"project\": \"set\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": []\n}",
+      "expected_text": "cantfail report\nproject - set\nschema - cantfail-report/3\ncollection settings - python_classes Spec\n\nstatic findings\nnone\n\ntest file verdicts\nno test files found\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "settings_restated_defaults_hidden",
+      "given": {
+        "project": "set",
+        "static_findings": [],
+        "verdicts": [],
+        "collection_settings": [],
+        "settings_source": "/somewhere/pytest.ini"
+      },
+      "expected_json": "{\n  \"project\": \"set\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": []\n}",
+      "expected_text": "cantfail report\nproject - set\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\nno test files found\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "settings_empty_patterns",
+      "given": {
+        "project": "set",
+        "static_findings": [],
+        "verdicts": [],
+        "collection_settings": [
+          [
+            "python_functions",
+            []
+          ]
+        ],
+        "settings_source": "/somewhere/pytest.ini"
+      },
+      "expected_json": "{\n  \"collection_settings\": {\n    \"python_functions\": []\n  },\n  \"collection_settings_source\": \"/somewhere/pytest.ini\",\n  \"project\": \"set\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": []\n}",
+      "expected_text": "cantfail report\nproject - set\nschema - cantfail-report/3\ncollection settings - python_functions \ncollection settings source - /somewhere/pytest.ini\n\nstatic findings\nnone\n\ntest file verdicts\nno test files found\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "partial_selection_flag",
+      "given": {
+        "project": "part",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_part.py",
+            "test_functions": [
+              "test_a"
+            ],
+            "baseline_ok": true,
+            "outcomes": [
+              {
+                "source_path": "calc.py",
+                "kind": "comparison_flip",
+                "line": 5,
+                "detail": "x < 3 becomes x >= 3",
+                "mutant_source": "calc.py",
+                "killed": false,
+                "timed_out": false
+              }
+            ],
+            "functions": [
+              {
+                "name": "test_a",
+                "baseline_ok": true,
+                "baseline_timed_out": false,
+                "outcomes": [
+                  {
+                    "source_path": "calc.py",
+                    "kind": "comparison_flip",
+                    "line": 5,
+                    "detail": "x < 3 becomes x >= 3",
+                    "mutant_source": "calc.py",
+                    "killed": false,
+                    "timed_out": false
+                  }
+                ]
+              }
+            ],
+            "whole_file": false,
+            "no_tests": false,
+            "partial_selection": true
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"part\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [\n        {\n          \"mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ],\n          \"name\": \"test_a\",\n          \"status\": \"decorative_candidate\",\n          \"surviving_mutants\": [\n            {\n              \"detail\": \"x < 3 becomes x >= 3\",\n              \"kind\": \"comparison_flip\",\n              \"line\": 5,\n              \"result\": \"survived\",\n              \"source\": \"calc.py\"\n            }\n          ]\n        }\n      ],\n      \"mutants\": [\n        {\n          \"detail\": \"x < 3 becomes x >= 3\",\n          \"kind\": \"comparison_flip\",\n          \"line\": 5,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"no_tests\": false,\n      \"partial_selection\": true,\n      \"path\": \"test_part.py\",\n      \"status\": \"decorative_candidate\",\n      \"surviving_mutants\": [\n        {\n          \"detail\": \"x < 3 becomes x >= 3\",\n          \"kind\": \"comparison_flip\",\n          \"line\": 5,\n          \"result\": \"survived\",\n          \"source\": \"calc.py\"\n        }\n      ],\n      \"test_functions\": [\n        \"test_a\"\n      ],\n      \"whole_file\": false\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - part\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_part.py - decorative_candidate\n  function - test_a - decorative_candidate\n    decorative candidate - this function stayed green under every applicable mutant in the fixed panel\n    mutant that walked through - calc.py - comparison_flip at line 5 - x < 3 becomes x >= 3\n  this file holds test shaped definitions the selector does not name, and the verdict covers the named items only\n  decorative candidate - every judged function in this file stayed green under every applicable mutant in the fixed panel\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    },
+    {
+      "name": "mutant_source_differs",
+      "given": {
+        "project": "src",
+        "static_findings": [],
+        "verdicts": [
+          {
+            "path": "test_s.py",
+            "test_functions": [],
+            "baseline_ok": true,
+            "outcomes": [
+              {
+                "source_path": "shown.py",
+                "kind": "return_none",
+                "line": 4,
+                "detail": "return value y",
+                "mutant_source": "hidden.py",
+                "killed": false,
+                "timed_out": false
+              }
+            ],
+            "functions": [],
+            "whole_file": true,
+            "no_tests": false,
+            "partial_selection": false
+          }
+        ],
+        "collection_settings": [],
+        "settings_source": null
+      },
+      "expected_json": "{\n  \"project\": \"src\",\n  \"schema\": \"cantfail-report/3\",\n  \"static_findings\": [],\n  \"verdicts\": [\n    {\n      \"functions\": [],\n      \"mutants\": [\n        {\n          \"detail\": \"return value y\",\n          \"kind\": \"return_none\",\n          \"line\": 4,\n          \"result\": \"survived\",\n          \"source\": \"shown.py\"\n        }\n      ],\n      \"no_tests\": false,\n      \"partial_selection\": false,\n      \"path\": \"test_s.py\",\n      \"status\": \"decorative_candidate\",\n      \"surviving_mutants\": [\n        {\n          \"detail\": \"return value y\",\n          \"kind\": \"return_none\",\n          \"line\": 4,\n          \"result\": \"survived\",\n          \"source\": \"shown.py\"\n        }\n      ],\n      \"test_functions\": [],\n      \"whole_file\": true\n    }\n  ]\n}",
+      "expected_text": "cantfail report\nproject - src\nschema - cantfail-report/3\n\nstatic findings\nnone\n\ntest file verdicts\ntest_s.py - decorative_candidate\n  decorative candidate - every judged function in this file stayed green under every applicable mutant in the fixed panel\n\nA surviving mutant is evidence about this fixed panel only. It does not prove a test is worthless and a killed mutant does not prove a test is strong.\n"
+    }
+  ],
+  "aggregate_cases": [
+    {
+      "name": "fold_kill_and_timeout",
+      "given_functions": [
+        {
+          "name": "test_1",
+          "baseline_ok": true,
+          "baseline_timed_out": false,
+          "outcomes": [
+            {
+              "source_path": "a.py",
+              "kind": "return_none",
+              "line": 1,
+              "detail": "d1",
+              "mutant_source": "a.py",
+              "killed": false,
+              "timed_out": false
+            },
+            {
+              "source_path": "a.py",
+              "kind": "flip",
+              "line": 2,
+              "detail": "d2",
+              "mutant_source": "a.py",
+              "killed": true,
+              "timed_out": false
+            }
+          ]
+        },
+        {
+          "name": "test_2",
+          "baseline_ok": true,
+          "baseline_timed_out": false,
+          "outcomes": [
+            {
+              "source_path": "a.py",
+              "kind": "flip",
+              "line": 2,
+              "detail": "d2",
+              "mutant_source": "a.py",
+              "killed": false,
+              "timed_out": false
+            },
+            {
+              "source_path": "a.py",
+              "kind": "return_none",
+              "line": 1,
+              "detail": "d1",
+              "mutant_source": "a.py",
+              "killed": false,
+              "timed_out": true
+            }
+          ]
+        }
+      ],
+      "expected_outcomes": [
+        {
+          "kind": "return_none",
+          "line": 1,
+          "detail": "d1",
+          "source": "a.py",
+          "result": "timeout"
+        },
+        {
+          "kind": "flip",
+          "line": 2,
+          "detail": "d2",
+          "source": "a.py",
+          "result": "killed"
+        }
+      ]
+    },
+    {
+      "name": "fold_identity_splits",
+      "given_functions": [
+        {
+          "name": "test_1",
+          "baseline_ok": true,
+          "baseline_timed_out": false,
+          "outcomes": [
+            {
+              "source_path": "a.py",
+              "kind": "return_none",
+              "line": 1,
+              "detail": "d1",
+              "mutant_source": "a.py",
+              "killed": false,
+              "timed_out": false
+            },
+            {
+              "source_path": "a.py",
+              "kind": "flip",
+              "line": 2,
+              "detail": "d2",
+              "mutant_source": "a.py",
+              "killed": true,
+              "timed_out": false
+            }
+          ]
+        },
+        {
+          "name": "test_3",
+          "baseline_ok": true,
+          "baseline_timed_out": false,
+          "outcomes": [
+            {
+              "source_path": "a.py",
+              "kind": "return_none",
+              "line": 1,
+              "detail": "d1-other",
+              "mutant_source": "a.py",
+              "killed": false,
+              "timed_out": false
+            },
+            {
+              "source_path": "b.py",
+              "kind": "return_none",
+              "line": 1,
+              "detail": "d1",
+              "mutant_source": "b.py",
+              "killed": false,
+              "timed_out": false
+            }
+          ]
+        }
+      ],
+      "expected_outcomes": [
+        {
+          "kind": "return_none",
+          "line": 1,
+          "detail": "d1",
+          "source": "a.py",
+          "result": "survived"
+        },
+        {
+          "kind": "flip",
+          "line": 2,
+          "detail": "d2",
+          "source": "a.py",
+          "result": "killed"
+        },
+        {
+          "kind": "return_none",
+          "line": 1,
+          "detail": "d1-other",
+          "source": "a.py",
+          "result": "survived"
+        },
+        {
+          "kind": "return_none",
+          "line": 1,
+          "detail": "d1",
+          "source": "b.py",
+          "result": "survived"
+        }
+      ]
+    },
+    {
+      "name": "fold_empty",
+      "given_functions": [],
+      "expected_outcomes": []
+    }
+  ]
+}

@@ -1,0 +1,2227 @@
+{
+  "generated_by": "probe_gen.py in the Round 14 scratch, run against the landed Python at the round base head; regenerate by running it again, never by editing recordings by hand",
+  "load_cases": [
+    {
+      "name": "pytest_ini_wins_over_pyproject",
+      "files": {
+        "proj/pytest.ini": "[pytest]\npython_functions = qa_ check_\n",
+        "proj/pyproject.toml": "[tool.pytest.ini_options]\npython_functions = \"from_pyproject\"\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "qa_",
+          "check_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "qa_",
+            "check_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "pytest_toml_wins_over_pytest_ini",
+      "files": {
+        "proj/pytest.toml": "[pytest]\npython_classes = [\"FromToml\"]\n",
+        "proj/pytest.ini": "[pytest]\npython_functions = qa_ check_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": [
+          "FromToml"
+        ],
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_classes",
+          [
+            "FromToml"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.toml"
+    },
+    {
+      "name": "hidden_pytest_toml",
+      "files": {
+        "proj/.pytest.toml": "[pytest]\npython_functions = [\"hid_\"]\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "hid_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "hid_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/.pytest.toml"
+    },
+    {
+      "name": "hidden_pytest_ini",
+      "files": {
+        "proj/.pytest.ini": "[pytest]\npython_functions = hidini_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "hidini_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "hidini_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/.pytest.ini"
+    },
+    {
+      "name": "pytest_ini_missing_section",
+      "files": {
+        "proj/pytest.ini": "[other]\npython_functions = nope_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "pytest_ini_broken_blocks_pyproject",
+      "files": {
+        "proj/pytest.ini": "[pytest]\npython_functions = a\npython_functions = b\n",
+        "proj/pyproject.toml": "[tool.pytest.ini_options]\npython_functions = \"from_pyproject\"\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_continuation_and_comments",
+      "files": {
+        "proj/pytest.ini": "# a comment\n[pytest]\n; another comment\npython_files =\n    spec_*.py\n\n    *_spec.py\npython_functions = qa_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "qa_"
+        ],
+        "python_classes": null,
+        "python_files": [
+          "spec_*.py",
+          "*_spec.py"
+        ]
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "qa_"
+          ]
+        ],
+        [
+          "python_files",
+          [
+            "spec_*.py",
+            "*_spec.py"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_keys_fold_case",
+      "files": {
+        "proj/pytest.ini": "[pytest]\nPYTHON_FUNCTIONS = Shout_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "Shout_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "Shout_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_default_section_supplies",
+      "files": {
+        "proj/pytest.ini": "[DEFAULT]\npython_files = def_*.py\n[pytest]\npython_functions = qa_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "qa_"
+        ],
+        "python_classes": null,
+        "python_files": [
+          "def_*.py"
+        ]
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "qa_"
+          ]
+        ],
+        [
+          "python_files",
+          [
+            "def_*.py"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_colon_delimiter",
+      "files": {
+        "proj/pytest.ini": "[pytest]\npython_functions: colon_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "colon_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "colon_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_empty_value",
+      "files": {
+        "proj/pytest.ini": "[pytest]\npython_functions =\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          []
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_value_overrides_default_section",
+      "files": {
+        "proj/pytest.ini": "[DEFAULT]\npython_functions = from_default\npython_classes = DefaultClass\n[pytest]\npython_functions = from_section\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "from_section"
+        ],
+        "python_classes": [
+          "DefaultClass"
+        ],
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "from_section"
+          ]
+        ],
+        [
+          "python_classes",
+          [
+            "DefaultClass"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_bom_refused",
+      "files": {
+        "proj/pytest.ini": {
+          "b64": "77u/W3B5dGVzdF0KcHl0aG9uX2Z1bmN0aW9ucyA9IHFhXwo="
+        },
+        "proj/pyproject.toml": "[tool.pytest.ini_options]\npython_functions = \"from_pyproject\"\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_undecodable_refused",
+      "files": {
+        "proj/pytest.ini": {
+          "b64": "W3B5dGVzdF0KcHl0aG9uX2Z1bmN0aW9ucyA9IP/+Cg=="
+        }
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_option_before_section_refused",
+      "files": {
+        "proj/pytest.ini": "python_functions = qa_\n[pytest]\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_section_header_trailing_text",
+      "files": {
+        "proj/pytest.ini": "[pytest] trailing words\npython_functions = qa_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "qa_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "qa_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_spaced_section_name",
+      "files": {
+        "proj/pytest.ini": "[ pytest ]\npython_functions = qa_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_duplicate_section_refused",
+      "files": {
+        "proj/pytest.ini": "[pytest]\npython_functions = qa_\n[pytest]\npython_classes = Spec\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "pyproject_ini_options",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest.ini_options]\npython_functions = \"from_pyproject\"\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "from_pyproject"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "from_pyproject"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "pyproject_native_forms",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest]\npython_functions = [\"nat_\", \"check_\"]\npython_classes = \"Spec Test\"\npython_files = 7\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "nat_",
+          "check_"
+        ],
+        "python_classes": [
+          "Spec",
+          "Test"
+        ],
+        "python_files": [
+          "7"
+        ]
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "nat_",
+            "check_"
+          ]
+        ],
+        [
+          "python_classes",
+          [
+            "Spec",
+            "Test"
+          ]
+        ],
+        [
+          "python_files",
+          [
+            "7"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "pyproject_both_forms_broken",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest]\naddopts = \"-x\"\n[tool.pytest.ini_options]\npython_functions = \"qa_\"\n",
+        "proj/setup.cfg": "[tool:pytest]\npython_functions = from_setupcfg\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "pyproject_no_tool_falls_through",
+      "files": {
+        "proj/pyproject.toml": "[project]\nname = \"x\"\n",
+        "proj/setup.cfg": "[tool:pytest]\npython_functions = from_setupcfg\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "from_setupcfg"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "from_setupcfg"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/setup.cfg"
+    },
+    {
+      "name": "pyproject_tool_not_a_table",
+      "files": {
+        "proj/pyproject.toml": "tool = \"nope\"\n",
+        "proj/setup.cfg": "[tool:pytest]\npython_functions = from_setupcfg\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "pyproject_empty_pytest_table_not_a_source",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest]\n",
+        "proj/tox.ini": "[pytest]\npython_functions = from_tox\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "from_tox"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "from_tox"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/tox.ini"
+    },
+    {
+      "name": "pyproject_pytest_not_a_table",
+      "files": {
+        "proj/pyproject.toml": "[tool]\npytest = \"nope\"\n",
+        "proj/setup.cfg": "[tool:pytest]\npython_functions = from_setupcfg\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "pyproject_ini_options_not_a_table",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest]\nini_options = \"nope\"\n",
+        "proj/setup.cfg": "[tool:pytest]\npython_functions = from_setupcfg\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "pyproject_broken_toml",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest\npython_functions = \"qa_\"\n",
+        "proj/setup.cfg": "[tool:pytest]\npython_functions = from_setupcfg\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "pyproject_inline_tables",
+      "files": {
+        "proj/pyproject.toml": "tool = {pytest = {python_functions = \"inl_\"}}\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "inl_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "inl_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "tox_wins_over_setup_cfg",
+      "files": {
+        "proj/tox.ini": "[pytest]\npython_functions = from_tox\n",
+        "proj/setup.cfg": "[tool:pytest]\npython_functions = from_setupcfg\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "from_tox"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "from_tox"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/tox.ini"
+    },
+    {
+      "name": "setup_cfg_no_section_not_a_source",
+      "files": {
+        "proj/setup.cfg": "[aliases]\ntest = pytest\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": null
+    },
+    {
+      "name": "setup_cfg_with_section",
+      "files": {
+        "proj/setup.cfg": "[tool:pytest]\npython_functions = from_setupcfg\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "from_setupcfg"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "from_setupcfg"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/setup.cfg"
+    },
+    {
+      "name": "setup_cfg_empty_section",
+      "files": {
+        "proj/setup.cfg": "[tool:pytest]\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/setup.cfg"
+    },
+    {
+      "name": "parent_folder_governs",
+      "files": {
+        "pytest.ini": "[pytest]\npython_functions = from_ini\n",
+        "proj/test_a.py": "def test_a():\n    pass\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "from_ini"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "from_ini"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/pytest.ini"
+    },
+    {
+      "name": "pass_through_non_source_pyproject",
+      "files": {
+        "pytest.ini": "[pytest]\npython_functions = from_ini\n",
+        "proj/pyproject.toml": "[tool.black]\nline-length = 88\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "from_ini"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "from_ini"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/pytest.ini"
+    },
+    {
+      "name": "broken_child_source_ends_search",
+      "files": {
+        "pytest.ini": "[pytest]\npython_functions = from_ini\n",
+        "proj/pyproject.toml": "[tool.pytest\nbroken = true\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "pytest_toml_pytest_not_a_table",
+      "files": {
+        "proj/pytest.toml": "pytest = \"nope\"\n",
+        "proj/pytest.ini": "[pytest]\npython_functions = qa_ check_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.toml"
+    },
+    {
+      "name": "pytest_toml_broken",
+      "files": {
+        "proj/pytest.toml": "[pytest\npython_functions = [\"x_\"]\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.toml"
+    },
+    {
+      "name": "no_source_anywhere",
+      "files": {
+        "proj/test_a.py": "def test_a():\n    pass\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": null
+    },
+    {
+      "name": "deep_project_parent_source",
+      "files": {
+        "pytest.ini": "[pytest]\npython_functions = from_ini\n",
+        "proj/sub/test_a.py": "def test_a():\n    pass\n"
+      },
+      "ask": "proj/sub",
+      "expected_settings": {
+        "python_functions": [
+          "from_ini"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "from_ini"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/pytest.ini"
+    },
+    {
+      "name": "ini_no_spaces_around_delimiter",
+      "files": {
+        "proj/pytest.ini": "[pytest]\npython_functions=qa_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "qa_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "qa_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "ini_tab_continuation",
+      "files": {
+        "proj/pytest.ini": "[pytest]\npython_files =\n\ttab_*.py\n\t*_tab.py\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": [
+          "tab_*.py",
+          "*_tab.py"
+        ]
+      },
+      "expected_non_defaults": [
+        [
+          "python_files",
+          [
+            "tab_*.py",
+            "*_tab.py"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "pyproject_scalar_forms",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest]\npython_functions = true\npython_classes = 1.5\npython_files = [2020-01-01, \"str_*.py\", 3]\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "True"
+        ],
+        "python_classes": [
+          "1.5"
+        ],
+        "python_files": [
+          "2020-01-01",
+          "str_*.py",
+          "3"
+        ]
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "True"
+          ]
+        ],
+        [
+          "python_classes",
+          [
+            "1.5"
+          ]
+        ],
+        [
+          "python_files",
+          [
+            "2020-01-01",
+            "str_*.py",
+            "3"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "pyproject_deciding_beats_tox",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest.ini_options]\npython_functions = \"from_pyproject\"\n",
+        "proj/tox.ini": "[pytest]\npython_functions = from_tox\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "from_pyproject"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "from_pyproject"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "pytest_toml_beats_hidden_toml",
+      "files": {
+        "proj/pytest.toml": "[pytest]\npython_functions = [\"first_\"]\n",
+        "proj/.pytest.toml": "[pytest]\npython_functions = [\"second_\"]\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "first_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "first_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.toml"
+    },
+    {
+      "name": "hidden_toml_beats_pytest_ini",
+      "files": {
+        "proj/.pytest.toml": "[pytest]\npython_functions = [\"toml_\"]\n",
+        "proj/pytest.ini": "[pytest]\npython_functions = qa_ check_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "toml_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "toml_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/.pytest.toml"
+    },
+    {
+      "name": "pytest_ini_beats_hidden_ini",
+      "files": {
+        "proj/pytest.ini": "[pytest]\npython_functions = qa_ check_\n",
+        "proj/.pytest.ini": "[pytest]\npython_functions = hidden_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "qa_",
+          "check_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "qa_",
+            "check_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.ini"
+    },
+    {
+      "name": "toml_duplicate_key_broken",
+      "files": {
+        "proj/pytest.toml": "[pytest]\npython_functions = [\"a_\"]\npython_functions = [\"b_\"]\n",
+        "proj/pytest.ini": "[pytest]\npython_functions = qa_ check_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.toml"
+    },
+    {
+      "name": "toml_duplicate_table_broken",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest]\npython_functions = \"a_\"\n[tool.pytest]\npython_classes = \"Spec\"\n",
+        "proj/setup.cfg": "[tool:pytest]\npython_functions = from_setupcfg\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "toml_inline_duplicate_broken",
+      "files": {
+        "proj/pyproject.toml": "tool = {pytest = {python_functions = \"a_\", python_functions = \"b_\"}}\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "symlinked_pyproject",
+      "files": {
+        "proj/real.toml": "[tool.pytest.ini_options]\npython_functions = \"sym_\"\n",
+        "proj/pyproject.toml": {
+          "link": "real.toml"
+        }
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "sym_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "sym_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "toml_comment_delete_at_head",
+      "files": {
+        "proj/pytest.toml": "# co\u007fment\n[pytest]\npython_functions = [\"qa_\"]\n",
+        "proj/pytest.ini": "[pytest]\npython_functions = qa_ check_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.toml"
+    },
+    {
+      "name": "toml_comment_control_after_statement",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest]\npython_functions = \"qa_\" # bad\u0001 comment\n",
+        "proj/setup.cfg": "[tool:pytest]\npython_functions = from_setupcfg\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "toml_comment_delete_inside_array",
+      "files": {
+        "proj/pytest.toml": "[pytest]\npython_functions = [\"a_\", # co\u007fment\n \"b_\"]\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.toml"
+    },
+    {
+      "name": "toml_comment_tab_control",
+      "files": {
+        "proj/pytest.toml": "# a\tcomment with a tab\n[pytest]\npython_functions = [\"tab_\"] # fine\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "tab_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "tab_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.toml"
+    },
+    {
+      "name": "toml_header_namespace_witness",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest]\n[tool]\npytest.python_functions = \"qa_\"\n",
+        "proj/setup.cfg": "[tool:pytest]\npython_functions = from_setupcfg\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "toml_header_namespace_witness_variant",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest]\npython_functions = \"a_\"\n[tool]\npytest.python_classes = \"Spec\"\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "toml_header_reopen_parent_control",
+      "files": {
+        "proj/pyproject.toml": "[tool.pytest]\npython_functions = \"a_\"\n[tool]\nother.x = 1\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "a_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "a_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "toml_dotted_keys_extend_control",
+      "files": {
+        "proj/pyproject.toml": "tool.pytest.python_functions = \"dot_\"\ntool.pytest.python_classes = \"Spec\"\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "dot_"
+        ],
+        "python_classes": [
+          "Spec"
+        ],
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "dot_"
+          ]
+        ],
+        [
+          "python_classes",
+          [
+            "Spec"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pyproject.toml"
+    },
+    {
+      "name": "toml_inline_pair_frozen_witness",
+      "files": {
+        "proj/pytest.toml": "[pytest]\nx = {b = {c = 1}, b.d = 2}\npython_functions = [\"qa_\"]\n",
+        "proj/pytest.ini": "[pytest]\npython_functions = qa_ check_\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.toml"
+    },
+    {
+      "name": "toml_inline_pair_frozen_deep_witness",
+      "files": {
+        "proj/pytest.toml": "[pytest]\nx = {b = {c = {d = 1}}, b.c.e = 2}\npython_functions = [\"qa_\"]\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": null,
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [],
+      "expected_source": "{BASE}/proj/pytest.toml"
+    },
+    {
+      "name": "toml_inline_pair_control",
+      "files": {
+        "proj/pytest.toml": "[pytest]\nx = {b.c = 1, b.d = 2}\npython_functions = [\"ok_\"]\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "ok_"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "ok_"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.toml"
+    },
+    {
+      "name": "toml_repr_words_from_nested_value",
+      "files": {
+        "proj/pytest.toml": "[pytest]\npython_functions = [[\"qa\u200b_\"], [\"x\u00ady\"]]\n"
+      },
+      "ask": "proj",
+      "expected_settings": {
+        "python_functions": [
+          "['qa\\u200b_']",
+          "['x\\xady']"
+        ],
+        "python_classes": null,
+        "python_files": null
+      },
+      "expected_non_defaults": [
+        [
+          "python_functions",
+          [
+            "['qa\\u200b_']",
+            "['x\\xady']"
+          ]
+        ]
+      ],
+      "expected_source": "{BASE}/proj/pytest.toml"
+    }
+  ],
+  "name_cases": [
+    {
+      "name": "test_foo",
+      "patterns": [
+        "test"
+      ],
+      "expected": true
+    },
+    {
+      "name": "attest",
+      "patterns": [
+        "test"
+      ],
+      "expected": false
+    },
+    {
+      "name": "test",
+      "patterns": [
+        "test"
+      ],
+      "expected": true
+    },
+    {
+      "name": "Test",
+      "patterns": [
+        "test"
+      ],
+      "expected": false
+    },
+    {
+      "name": "qa_check",
+      "patterns": [
+        "qa_*"
+      ],
+      "expected": true
+    },
+    {
+      "name": "b",
+      "patterns": [
+        "[a-c]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "d",
+      "patterns": [
+        "[a-c]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "b",
+      "patterns": [
+        "[!a-c]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "z",
+      "patterns": [
+        "[!a-c]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "]",
+      "patterns": [
+        "[]]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "a",
+      "patterns": [
+        "[]a]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "-",
+      "patterns": [
+        "[-a]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "a",
+      "patterns": [
+        "[a-]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "-",
+      "patterns": [
+        "[a-]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "z",
+      "patterns": [
+        "[z-a]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "a",
+      "patterns": [
+        "[z-a]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "-",
+      "patterns": [
+        "[z-a]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "b",
+      "patterns": [
+        "[a-c-e]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "-",
+      "patterns": [
+        "[a-c-e]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "d",
+      "patterns": [
+        "[a-c-e]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "a",
+      "patterns": [
+        "[a-cx-z]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "y",
+      "patterns": [
+        "[a-cx-z]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "m",
+      "patterns": [
+        "[a-cx-z]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "ab",
+      "patterns": [
+        "a?"
+      ],
+      "expected": true
+    },
+    {
+      "name": "a",
+      "patterns": [
+        "a?"
+      ],
+      "expected": false
+    },
+    {
+      "name": "a\nb",
+      "patterns": [
+        "a?b"
+      ],
+      "expected": true
+    },
+    {
+      "name": "",
+      "patterns": [
+        "*"
+      ],
+      "expected": true
+    },
+    {
+      "name": "anything",
+      "patterns": [
+        "*a*g"
+      ],
+      "expected": true
+    },
+    {
+      "name": "aa",
+      "patterns": [
+        "*a*a"
+      ],
+      "expected": true
+    },
+    {
+      "name": "ab",
+      "patterns": [
+        "*ab*ab"
+      ],
+      "expected": false
+    },
+    {
+      "name": "abab",
+      "patterns": [
+        "*ab*ab"
+      ],
+      "expected": true
+    },
+    {
+      "name": "aab",
+      "patterns": [
+        "*a*b"
+      ],
+      "expected": true
+    },
+    {
+      "name": "ba",
+      "patterns": [
+        "*a*b"
+      ],
+      "expected": false
+    },
+    {
+      "name": "acb",
+      "patterns": [
+        "*a*b"
+      ],
+      "expected": true
+    },
+    {
+      "name": "abc",
+      "patterns": [
+        "a*c"
+      ],
+      "expected": true
+    },
+    {
+      "name": "abc",
+      "patterns": [
+        "a**c"
+      ],
+      "expected": true
+    },
+    {
+      "name": "",
+      "patterns": [
+        "**"
+      ],
+      "expected": true
+    },
+    {
+      "name": "",
+      "patterns": [
+        ""
+      ],
+      "expected": true
+    },
+    {
+      "name": "a",
+      "patterns": [
+        ""
+      ],
+      "expected": true
+    },
+    {
+      "name": "b",
+      "patterns": [
+        "[!]a]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "]",
+      "patterns": [
+        "[!]a]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "a",
+      "patterns": [
+        "[!]a]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "z",
+      "patterns": [
+        "[a-cz-a]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "-",
+      "patterns": [
+        "[a-cz-a]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "b",
+      "patterns": [
+        "[a-cz-a]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "c",
+      "patterns": [
+        "[a-cz-a]"
+      ],
+      "expected": true
+    },
+    {
+      "name": "y",
+      "patterns": [
+        "[m-ay-b]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "-",
+      "patterns": [
+        "[m-ay-b]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "t\u00e9st",
+      "patterns": [
+        "t?st"
+      ],
+      "expected": true
+    },
+    {
+      "name": "a\nb",
+      "patterns": [
+        "a*b"
+      ],
+      "expected": true
+    },
+    {
+      "name": "test_x",
+      "patterns": [
+        "exam",
+        "test"
+      ],
+      "expected": true
+    },
+    {
+      "name": "exam_x",
+      "patterns": [
+        "exam",
+        "test"
+      ],
+      "expected": true
+    },
+    {
+      "name": "none",
+      "patterns": [
+        "exam",
+        "test"
+      ],
+      "expected": false
+    },
+    {
+      "name": "x",
+      "patterns": [
+        "[\\]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "\\",
+      "patterns": [
+        "[\\\\]"
+      ],
+      "expected": true
+    }
+  ],
+  "file_cases": [
+    {
+      "relative": "test_x.py",
+      "filename": "test_x.py",
+      "patterns": [
+        "test_*.py"
+      ],
+      "expected": true
+    },
+    {
+      "relative": "sub/test_x.py",
+      "filename": "test_x.py",
+      "patterns": [
+        "test_*.py"
+      ],
+      "expected": true
+    },
+    {
+      "relative": "sub/qa_x.py",
+      "filename": "qa_x.py",
+      "patterns": [
+        "sub/*.py"
+      ],
+      "expected": true
+    },
+    {
+      "relative": "sub/qa_x.py",
+      "filename": "qa_x.py",
+      "patterns": [
+        "*.py"
+      ],
+      "expected": true
+    },
+    {
+      "relative": "deep/sub/test_a.py",
+      "filename": "test_a.py",
+      "patterns": [
+        "sub/*.py"
+      ],
+      "expected": false
+    },
+    {
+      "relative": "a/test_b.py",
+      "filename": "test_b.py",
+      "patterns": [
+        "*/test_*.py"
+      ],
+      "expected": true
+    },
+    {
+      "relative": "test_a.py",
+      "filename": "test_a.py",
+      "patterns": [
+        "TEST_*.py"
+      ],
+      "expected": false
+    },
+    {
+      "relative": "x/y.py",
+      "filename": "y.py",
+      "patterns": [
+        "x/y.py"
+      ],
+      "expected": true
+    },
+    {
+      "relative": "x/y.py",
+      "filename": "y.py",
+      "patterns": [
+        "x/*.py",
+        "z/*.py"
+      ],
+      "expected": true
+    },
+    {
+      "relative": "src/deep/test_m.py",
+      "filename": "test_m.py",
+      "patterns": [
+        "src/**/*.py"
+      ],
+      "expected": true
+    },
+    {
+      "relative": "a\\b.py",
+      "filename": "a\\b.py",
+      "patterns": [
+        "a\\\\b.py"
+      ],
+      "expected": false
+    },
+    {
+      "relative": "plain.py",
+      "filename": "plain.py",
+      "patterns": [],
+      "expected": false
+    }
+  ],
+  "split_cases": [
+    {
+      "spec": {
+        "t": "str",
+        "v": "  qa_   test_*  "
+      },
+      "expected": [
+        "qa_",
+        "test_*"
+      ]
+    },
+    {
+      "spec": {
+        "t": "str",
+        "v": "a\tb\nc"
+      },
+      "expected": [
+        "a",
+        "b",
+        "c"
+      ]
+    },
+    {
+      "spec": {
+        "t": "str",
+        "v": ""
+      },
+      "expected": []
+    },
+    {
+      "spec": {
+        "t": "str",
+        "v": "   "
+      },
+      "expected": []
+    },
+    {
+      "spec": {
+        "t": "str",
+        "v": "a\u001cb"
+      },
+      "expected": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "spec": {
+        "t": "str",
+        "v": "a\u00a0b"
+      },
+      "expected": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "str",
+            "v": "x"
+          },
+          {
+            "t": "str",
+            "v": "y z"
+          }
+        ]
+      },
+      "expected": [
+        "x",
+        "y z"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "int",
+            "v": "3"
+          },
+          {
+            "t": "bool",
+            "v": true
+          },
+          {
+            "t": "float",
+            "v": "2.5"
+          }
+        ]
+      },
+      "expected": [
+        "3",
+        "True",
+        "2.5"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "datetime",
+            "v": [
+              2020,
+              1,
+              1,
+              10,
+              0,
+              0,
+              0,
+              null
+            ]
+          }
+        ]
+      },
+      "expected": [
+        "2020-01-01 10:00:00"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "datetime",
+            "v": [
+              2020,
+              1,
+              1,
+              10,
+              0,
+              0,
+              0,
+              "utc"
+            ]
+          }
+        ]
+      },
+      "expected": [
+        "2020-01-01 10:00:00+00:00"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "datetime",
+            "v": [
+              2020,
+              1,
+              1,
+              10,
+              0,
+              0,
+              0,
+              19800
+            ]
+          }
+        ]
+      },
+      "expected": [
+        "2020-01-01 10:00:00+05:30"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "date",
+            "v": [
+              2020,
+              2,
+              29
+            ]
+          }
+        ]
+      },
+      "expected": [
+        "2020-02-29"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "time",
+            "v": [
+              10,
+              0,
+              0,
+              500000
+            ]
+          }
+        ]
+      },
+      "expected": [
+        "10:00:00.500000"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "list",
+            "v": [
+              {
+                "t": "str",
+                "v": "a"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": [
+        "['a']"
+      ]
+    },
+    {
+      "spec": {
+        "t": "table",
+        "v": [
+          [
+            "a",
+            {
+              "t": "int",
+              "v": "1"
+            }
+          ]
+        ]
+      },
+      "expected": [
+        "{'a': 1}"
+      ]
+    },
+    {
+      "spec": {
+        "t": "int",
+        "v": "42"
+      },
+      "expected": [
+        "42"
+      ]
+    },
+    {
+      "spec": {
+        "t": "int",
+        "v": "-7"
+      },
+      "expected": [
+        "-7"
+      ]
+    },
+    {
+      "spec": {
+        "t": "int",
+        "v": "99999999999999999999999999"
+      },
+      "expected": [
+        "99999999999999999999999999"
+      ]
+    },
+    {
+      "spec": {
+        "t": "bool",
+        "v": false
+      },
+      "expected": [
+        "False"
+      ]
+    },
+    {
+      "spec": {
+        "t": "float",
+        "v": "2.0"
+      },
+      "expected": [
+        "2.0"
+      ]
+    },
+    {
+      "spec": {
+        "t": "float",
+        "v": "1e16"
+      },
+      "expected": [
+        "1e+16"
+      ]
+    },
+    {
+      "spec": {
+        "t": "float",
+        "v": "0.0001"
+      },
+      "expected": [
+        "0.0001"
+      ]
+    },
+    {
+      "spec": {
+        "t": "float",
+        "v": "0.00001"
+      },
+      "expected": [
+        "1e-05"
+      ]
+    },
+    {
+      "spec": {
+        "t": "float",
+        "v": "-0.0"
+      },
+      "expected": [
+        "-0.0"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "list",
+            "v": [
+              {
+                "t": "str",
+                "v": "a\u200bb"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": [
+        "['a\\u200bb']"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "list",
+            "v": [
+              {
+                "t": "str",
+                "v": "x\u00ady"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": [
+        "['x\\xady']"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "list",
+            "v": [
+              {
+                "t": "str",
+                "v": "a\u2028b"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": [
+        "['a\\u2028b']"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "list",
+            "v": [
+              {
+                "t": "str",
+                "v": "a\u3000b"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": [
+        "['a\\u3000b']"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "list",
+            "v": [
+              {
+                "t": "str",
+                "v": "a\ufeffb"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": [
+        "['a\\ufeffb']"
+      ]
+    },
+    {
+      "spec": {
+        "t": "table",
+        "v": [
+          [
+            "a\u200bb",
+            {
+              "t": "int",
+              "v": "1"
+            }
+          ]
+        ]
+      },
+      "expected": [
+        "{'a\\u200bb': 1}"
+      ]
+    },
+    {
+      "spec": {
+        "t": "list",
+        "v": [
+          {
+            "t": "str",
+            "v": "a\u200bb"
+          }
+        ]
+      },
+      "expected": [
+        "a\u200bb"
+      ]
+    }
+  ]
+}
