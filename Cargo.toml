@@ -1,0 +1,12 @@
+[package]
+name = "cantfail"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "cantfail"
+path = "src/lib.rs"
+
+[[bin]]
+name = "cantfail"
+path = "src/main.rs"
