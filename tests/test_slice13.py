@@ -20,8 +20,8 @@ preamble records.
 
 from pathlib import Path
 
-from cantfail.runner import analyse_project
-from cantfail.static_scan import scan_source, selectable_test_items
+from ostensible.runner import analyse_project
+from ostensible.static_scan import scan_source, selectable_test_items
 
 
 def write_project(root, files):

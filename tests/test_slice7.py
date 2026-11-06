@@ -13,9 +13,9 @@ Every fixture here is synthetic and written for this test file.
 import json
 from pathlib import Path
 
-from cantfail.report import to_json, to_text
-from cantfail.runner import _discover, analyse_project
-from cantfail.settings import (
+from ostensible.report import to_json, to_text
+from ostensible.runner import _discover, analyse_project
+from ostensible.settings import (
     load_collection_settings,
     load_collection_settings_with_source,
 )

@@ -1,4 +1,4 @@
-//! cantfail asks whether a test can fail.
+//! ostensible asks whether a test can fail.
 //!
 //! This crate is the Rust port of the Python package of the same
 //! name, built slice by slice against the landed Python, which

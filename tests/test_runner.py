@@ -3,7 +3,7 @@
 import hashlib
 from pathlib import Path
 
-from cantfail.runner import analyse_project
+from ostensible.runner import analyse_project
 from factories import (
     BASELINE_FAILING,
     DECORATIVE,

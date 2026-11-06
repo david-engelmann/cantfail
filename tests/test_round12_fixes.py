@@ -17,7 +17,7 @@ Every fixture here is synthetic and written for this test
 file, in the shapes the slice 13 fixtures established.
 """
 
-from cantfail.static_scan import scan_source, selectable_test_items
+from ostensible.static_scan import scan_source, selectable_test_items
 
 HEAD = "import pytest\nfrom unittest.mock import Mock\n\n"
 

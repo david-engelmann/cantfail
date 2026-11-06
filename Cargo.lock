@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "cantfail"
+name = "ostensible"
 version = "0.1.0"

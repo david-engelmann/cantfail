@@ -4,7 +4,7 @@ Every fixture here is synthetic and written for this test file.
 The red team probes are ported here as regression tests.
 """
 
-from cantfail.static_scan import scan_source
+from ostensible.static_scan import scan_source
 
 HELPER = (
     "from unittest.mock import Mock\n"

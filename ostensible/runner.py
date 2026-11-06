@@ -438,7 +438,7 @@ def _paired_sources(test_file: Path, sources: list[Path]) -> list[Path]:
 def _copy_project(
     project: Path, governing_file: Path | None = None
 ) -> Path:
-    scratch = Path(tempfile.mkdtemp(prefix="cantfail-"))
+    scratch = Path(tempfile.mkdtemp(prefix="ostensible-"))
     target = scratch / "project"
     shutil.copytree(
         project,

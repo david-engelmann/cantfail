@@ -3,14 +3,14 @@
 Every fixture here is synthetic and written for this test file.
 """
 
-from cantfail.mutations import Mutant
-from cantfail.runner import (
+from ostensible.mutations import Mutant
+from ostensible.runner import (
     FileVerdict,
     FunctionVerdict,
     MutantOutcome,
     analyse_project,
 )
-from cantfail.static_scan import scan_source, top_level_test_functions
+from ostensible.static_scan import scan_source, top_level_test_functions
 from factories import write_project
 
 

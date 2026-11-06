@@ -2,7 +2,7 @@
 
 import ast
 
-from cantfail.mutations import generate_mutants
+from ostensible.mutations import generate_mutants
 
 PANEL_SOURCE = (
     "def check(x):\n"

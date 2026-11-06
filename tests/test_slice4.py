@@ -9,15 +9,15 @@ written for this test file.
 
 import json
 
-from cantfail.report import to_json, to_text
-from cantfail.runner import _discover, analyse_project
-from cantfail.settings import (
+from ostensible.report import to_json, to_text
+from ostensible.runner import _discover, analyse_project
+from ostensible.settings import (
     CollectionSettings,
     file_matches,
     load_collection_settings,
     name_matches,
 )
-from cantfail.static_scan import selectable_test_items
+from ostensible.static_scan import selectable_test_items
 from factories import WELL_TESTED, write_project
 
 

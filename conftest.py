@@ -1,1 +1,1 @@
-"""Root conftest so the cantfail package is importable in tests."""
+"""Root conftest so the ostensible package is importable in tests."""

@@ -3,8 +3,8 @@ and D3, the report format version and per function verdicts."""
 
 import json
 
-from cantfail.report import to_json, to_text
-from cantfail.runner import analyse_project
+from ostensible.report import to_json, to_text
+from ostensible.runner import analyse_project
 from factories import DECORATIVE, MIXED, write_project
 
 

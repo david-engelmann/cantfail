@@ -2,7 +2,7 @@
 
 import json
 
-from cantfail.cli import main
+from ostensible.cli import main
 from factories import DECORATIVE, write_project
 
 

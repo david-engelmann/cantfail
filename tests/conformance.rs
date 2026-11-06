@@ -5,17 +5,17 @@
 //! the recording exactly. The recordings were produced by the
 //! probe generator in the round scratch, never written by hand.
 
-use cantfail::ini::IniLoad;
-use cantfail::jsonvalue::JsonValue;
-use cantfail::model::{
+use ostensible::ini::IniLoad;
+use ostensible::jsonvalue::JsonValue;
+use ostensible::model::{
     aggregate_outcomes, Analysis, FileVerdict, FunctionVerdict, Mutant, MutantOutcome,
     StaticFinding,
 };
-use cantfail::pyvalue::{Offset, PyValue};
-use cantfail::settings::{
+use ostensible::pyvalue::{Offset, PyValue};
+use ostensible::settings::{
     file_matches, load_collection_settings_with_source, name_matches, split_words,
 };
-use cantfail::{report, settings};
+use ostensible::{report, settings};
 use std::path::PathBuf;
 
 // A small JSON reader for the recordings. Numbers land as
@@ -484,7 +484,7 @@ fn base64_decode(text: &str) -> Vec<u8> {
 
 fn fresh_base(tag: &str) -> PathBuf {
     let base = std::env::temp_dir().join(format!(
-        "cantfail-port1-{}-{}",
+        "ostensible-port1-{}-{}",
         std::process::id(),
         tag
     ));
@@ -743,7 +743,7 @@ fn ini_refusals_and_readings_agree_with_the_parser() {
     let base = fresh_base("ini");
     let good = base.join("good.ini");
     std::fs::write(&good, "[pytest]\npython_functions = qa_\n").unwrap();
-    match cantfail::ini::load_ini(&good) {
+    match ostensible::ini::load_ini(&good) {
         IniLoad::Parsed(parser) => {
             assert!(parser.has_section("pytest"));
             assert_eq!(
@@ -756,11 +756,11 @@ fn ini_refusals_and_readings_agree_with_the_parser() {
     let broken = base.join("broken.ini");
     std::fs::write(&broken, "[pytest]\na = 1\na = 2\n").unwrap();
     assert!(matches!(
-        cantfail::ini::load_ini(&broken),
+        ostensible::ini::load_ini(&broken),
         IniLoad::Refused
     ));
     let missing = base.join("missing.ini");
-    match cantfail::ini::load_ini(&missing) {
+    match ostensible::ini::load_ini(&missing) {
         IniLoad::Parsed(parser) => assert!(!parser.has_section("pytest")),
         IniLoad::Refused => panic!("a missing file must read as empty"),
     }

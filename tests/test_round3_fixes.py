@@ -9,13 +9,13 @@ on this machine where the two tools could be compared directly.
 import json
 from pathlib import Path
 
-from cantfail.report import to_json, to_text
-from cantfail.runner import analyse_project
-from cantfail.settings import (
+from ostensible.report import to_json, to_text
+from ostensible.runner import analyse_project
+from ostensible.settings import (
     CollectionSettings,
     load_collection_settings,
 )
-from cantfail.static_scan import selectable_test_items
+from ostensible.static_scan import selectable_test_items
 
 
 def write_project(root, files):

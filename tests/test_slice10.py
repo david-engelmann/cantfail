@@ -18,8 +18,8 @@ records.
 
 from pathlib import Path
 
-from cantfail.runner import analyse_project
-from cantfail.static_scan import scan_source
+from ostensible.runner import analyse_project
+from ostensible.static_scan import scan_source
 
 
 def write_project(root, files):

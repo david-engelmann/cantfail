@@ -13,7 +13,7 @@ Every fixture here is synthetic and written for this test
 file.
 """
 
-from cantfail.static_scan import scan_source
+from ostensible.static_scan import scan_source
 
 
 def _source(setup, condition):

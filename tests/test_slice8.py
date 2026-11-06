@@ -7,8 +7,8 @@ read the effective definition under J2. Every fixture here is
 synthetic and written for this test file.
 """
 
-from cantfail.settings import CollectionSettings
-from cantfail.static_scan import scan_source
+from ostensible.settings import CollectionSettings
+from ostensible.static_scan import scan_source
 
 CHECK_SETTINGS = CollectionSettings(python_functions=("check_*",))
 
