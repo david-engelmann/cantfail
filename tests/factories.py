@@ -1,4 +1,4 @@
-"""Synthetic fixture projects used by the cantfail tests.
+"""Synthetic fixture projects used by the ostensible tests.
 
 Every project here is invented for this repository. No fixture is
 drawn from a real codebase.

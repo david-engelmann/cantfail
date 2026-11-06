@@ -17,7 +17,7 @@ file. The readings were arbitrated against the installed
 pytest 9.1.1 by the slice 14 probes and the review probes.
 """
 
-from cantfail.static_scan import (
+from ostensible.static_scan import (
     has_unselected_test_shapes,
     scan_source,
     selectable_test_items,

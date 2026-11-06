@@ -16,7 +16,7 @@ probe projects behind them are the shapes the contract
 preamble records.
 """
 
-from cantfail.static_scan import (
+from ostensible.static_scan import (
     has_unselected_test_shapes,
     scan_source,
     selectable_test_items,

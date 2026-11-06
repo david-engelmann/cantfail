@@ -54,8 +54,8 @@ Verify claims from the thing itself. A result is read from the file on disk, the
 
 ## Repo annex
 
-This annex is cantfail's alone. The canonical part above this repo's annex is never edited here.
+This annex is ostensible's alone. The canonical part above this repo's annex is never edited here.
 
-Cantfail asks whether a test can fail. Canaryfield asks whether the harness catches planted defects, and suitediet asks which tests earn their runtime. Cantfail never plants defects and never weighs runtime.
+Ostensible asks whether a test can fail. Canaryfield asks whether the harness catches planted defects, and greenharvest asks which tests earn their runtime. Ostensible never plants defects and never weighs runtime.
 
 The local gate is python -m pytest for the Python spec suite and cargo test for the Rust port, both run on the exact final head. The Python suite runs with pytest alone and no network. Behaviour the reading claims about pytest is arbitrated against pytest 9.1.1, and probes against that version stand behind the obligations they settle. The report schema stands at cantfail-report/3 and changes only by a stated obligation. The two demo reports regenerate byte identical on every head, and a change that moves them is a finding until the contract states it. The closed round count stands in the README alone in this repo, with no test pin carrying it, so the README sentence is the record and is checked at every closure by eye against the registry.

@@ -4,8 +4,8 @@ Every fixture here is synthetic and written for this test file.
 The red team probes are ported here as regression tests.
 """
 
-from cantfail.settings import CollectionSettings
-from cantfail.static_scan import (
+from ostensible.settings import CollectionSettings
+from ostensible.static_scan import (
     has_unselected_test_shapes,
     scan_source,
     selectable_test_items,

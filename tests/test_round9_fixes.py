@@ -9,7 +9,7 @@ reading M1 states, the same correction the earlier rounds
 applied to a test that enshrined a retired limit.
 """
 
-from cantfail.static_scan import scan_source
+from ostensible.static_scan import scan_source
 
 
 DELEGATING = (

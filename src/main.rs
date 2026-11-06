@@ -14,12 +14,12 @@ use std::process::ExitCode;
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().collect();
     if args.len() != 2 {
-        eprintln!("usage: cantfail <project folder>");
+        eprintln!("usage: ostensible <project folder>");
         return ExitCode::from(2);
     }
     let (settings, source) =
-        cantfail::settings::load_collection_settings_with_source(Path::new(&args[1]));
-    for key in cantfail::settings::KEYS {
+        ostensible::settings::load_collection_settings_with_source(Path::new(&args[1]));
+    for key in ostensible::settings::KEYS {
         if let Some(patterns) = settings.get(key) {
             println!("{} = {}", key, patterns.join(" "));
         }

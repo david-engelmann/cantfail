@@ -8,10 +8,10 @@ Every fixture here is synthetic and written for this test file.
 
 import json
 
-from cantfail.report import to_json
-from cantfail.runner import analyse_project
-from cantfail.settings import CollectionSettings
-from cantfail.static_scan import (
+from ostensible.report import to_json
+from ostensible.runner import analyse_project
+from ostensible.settings import CollectionSettings
+from ostensible.static_scan import (
     has_unselected_test_shapes,
     scan_source,
     selectable_test_items,

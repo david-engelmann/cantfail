@@ -1,4 +1,4 @@
-"""Allow running cantfail with python -m cantfail."""
+"""Allow running ostensible with python -m ostensible."""
 
 from .cli import main
 

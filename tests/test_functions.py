@@ -4,8 +4,8 @@ D1 is per test function verdicts. D2 is the file level rollup
 derived from those verdicts.
 """
 
-from cantfail.mutations import Mutant
-from cantfail.runner import (
+from ostensible.mutations import Mutant
+from ostensible.runner import (
     FileVerdict,
     FunctionVerdict,
     MutantOutcome,

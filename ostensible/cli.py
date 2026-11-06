@@ -1,4 +1,4 @@
-"""Command line entry point for cantfail."""
+"""Command line entry point for ostensible."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from .runner import analyse_project
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="cantfail",
+        prog="ostensible",
         description=(
             "Name the tests that no mutation in a fixed panel "
             "can turn red."

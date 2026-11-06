@@ -1,6 +1,6 @@
 """Tests for obligation C1, the static mock fast path."""
 
-from cantfail.static_scan import scan_source
+from ostensible.static_scan import scan_source
 
 
 def test_direct_mock_return_value_assertion_is_flagged():

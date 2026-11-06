@@ -5,9 +5,9 @@ Every fixture here is synthetic and written for this test file.
 
 import json
 
-from cantfail.report import to_json, to_text
-from cantfail.runner import analyse_project
-from cantfail.static_scan import selectable_test_items
+from ostensible.report import to_json, to_text
+from ostensible.runner import analyse_project
+from ostensible.static_scan import selectable_test_items
 from factories import write_project
 
 
