@@ -23,6 +23,6 @@ pub use model::{
     StaticFinding,
 };
 pub use settings::{
-    file_matches, load_collection_settings, load_collection_settings_with_source,
-    name_matches, CollectionSettings,
+    file_matches, load_collection_settings, load_collection_settings_with_source, name_matches,
+    CollectionSettings,
 };
